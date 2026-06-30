@@ -870,8 +870,10 @@ export default function TawangStay() {
   const [loading, setLoading]     = useState(false);
   const [view, setView]           = useState("form");
   const [routeModalFor, setRouteModalFor] = useState(null);
+  const [openKriteria, setOpenKriteria] = useState(null);
 
   const setPrefVal = (k, v) => setPref(p => ({...p, [k]: v}));
+  const toggleKriteria = (k) => setOpenKriteria(o => o === k ? null : k);
 
   const detectLocation = useCallback(() => {
     if (!navigator.geolocation) return alert("Geolokasi tidak didukung browser ini.");
@@ -942,24 +944,25 @@ export default function TawangStay() {
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16,flexWrap:"wrap"}}>
           <div>
             <div style={{
-              display:"inline-block",fontSize:10,fontWeight:700,letterSpacing:".2em",textTransform:"uppercase",
-              color:C.teal,background:C.tealSoft,border:`1px solid ${C.tealBorder}`,
-              borderRadius:20,padding:"4px 12px",marginBottom:10,
-            }}>
-              AHP + Dijkstra · Tawangmangu
-            </div>
-            <div style={{
-              fontFamily:"Georgia,serif",fontStyle:"italic",fontWeight:700,
-              fontSize:17,color:C.rosewoodDark,marginBottom:2,
-            }}>
-              We are searching the best for you.
-            </div>
-            <h1 style={{
-              fontFamily:"Georgia,serif",fontSize:44,fontWeight:900,lineHeight:1,
-              color:C.rosewoodDark,margin:0,letterSpacing:".01em",
-            }}>
-              Tawang<span style={{color:C.teal}}>Stay</span>
-            </h1>
+                display:"inline-block",fontSize:10,fontWeight:700,letterSpacing:".2em",textTransform:"uppercase",
+                color:C.teal,background:C.tealSoft,border:`1px solid ${C.tealBorder}`,
+                borderRadius:20,padding:"4px 12px",marginBottom:10,
+              }}>
+                Sistem Rekomendasi Penginapan di Tawangmangu
+              </div>
+              <h1 style={{
+                fontFamily:"Georgia,serif",fontSize:44,fontWeight:900,lineHeight:1,
+                color:C.rosewoodDark,margin:0,letterSpacing:".01em",
+              }}>
+                Tawang<span style={{color:C.teal}}>Stay</span>
+              </h1>
+              <div style={{
+                fontFamily:"Georgia,serif",fontStyle:"italic",fontSize:13,fontWeight:600,
+                letterSpacing:".02em",color:C.rosewoodDark,opacity:.65,
+                marginTop:12,
+              }}>
+                Berbasis Analytical Hierarchy Process & Algoritma Dijkstra
+              </div>
           </div>
 
           {view === "hasil" && (
@@ -993,47 +996,88 @@ export default function TawangStay() {
                 alignSelf:"start",
               }}>
               <div style={{
-                fontSize:9.5,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",
-                color:C.teal,marginBottom:2,
+                fontSize:9.5,fontWeight:900,letterSpacing:".16em",textTransform:"uppercase",
+                color:C.rosewoodDark,marginBottom:2,
               }}>
                 Atur Preferensi Anda
               </div>
-              {KRITERIA.map(k => {
-                const Icon = KRITERIA_ICON[k];
-                return (
-                  <div key={k} style={{paddingBottom:14,borderBottom:`1px solid ${C.border}`}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-                      <span style={{display:"flex",alignItems:"center",gap:7,fontSize:13.5,fontWeight:700,color:C.rosewoodDark}}>
-                        {Icon && (
-                          <span style={{
-                            width:24,height:24,borderRadius:7,flexShrink:0,
-                            background:C.tealSoft,display:"flex",alignItems:"center",justifyContent:"center",
-                          }}>
-                            <Icon size={13} color={C.tealDeep} />
-                          </span>
-                        )}
-                        {LABEL_KRITERIA[k]}
-                      </span>
-                      <span style={{
-                        fontSize:11,fontWeight:700,color:"#fff",
-                        background:C.teal,borderRadius:20,padding:"2px 9px",minWidth:18,textAlign:"center",
-                      }}>{pref[k]}</span>
-                    </div>
-                    <input
-                      type="range" min={1} max={5} value={pref[k]}
-                      onChange={e => setPrefVal(k, +e.target.value)}
+
+              <div style={{
+                display:"flex",flexDirection:"column",
+                border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",
+              }}>
+                {KRITERIA.map((k, idx) => {
+                  const Icon = KRITERIA_ICON[k];
+                  const isOpen = openKriteria === k;
+                  return (
+                    <div
+                      key={k}
                       style={{
-                        WebkitAppearance:"none",width:"100%",height:5,borderRadius:3,
-                        outline:"none",cursor:"pointer",margin:"6px 0",
-                        background:`linear-gradient(to right,${C.teal} 0%,${C.teal} ${((pref[k]-1)/4)*100}%,${C.border} ${((pref[k]-1)/4)*100}%,${C.border} 100%)`,
+                        borderTop: idx === 0 ? "none" : `1px solid ${C.border}`,
                       }}
-                    />
-                    <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>
-                      Seberapa penting {LABEL_KRITERIA[k].toLowerCase()} menjadi faktor pertimbangan anda dalam memilih penginapan?
+                    >
+                      <button
+                        onClick={() => toggleKriteria(k)}
+                        style={{
+                          width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
+                          gap:10,padding:"11px 12px",background: isOpen ? C.tealSoft : "#fff",
+                          border:"none",cursor:"pointer",textAlign:"left",
+                          transition:"background .15s",
+                        }}
+                      >
+                        <span style={{display:"flex",alignItems:"center",gap:9,minWidth:0}}>
+                          {Icon && (
+                            <span style={{
+                              width:24,height:24,borderRadius:7,flexShrink:0,
+                              background:C.tealSoft,display:"flex",alignItems:"center",justifyContent:"center",
+                            }}>
+                              <Icon size={13} color={C.tealDeep} />
+                            </span>
+                          )}
+                          <span style={{fontSize:13.5,fontWeight:700,color:C.rosewoodDark,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                            {LABEL_KRITERIA[k]}
+                          </span>
+                        </span>
+                        <span style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                          <span style={{
+                            fontSize:11,fontWeight:700,color:"#fff",
+                            background:C.teal,borderRadius:20,padding:"2px 9px",minWidth:18,textAlign:"center",
+                          }}>{pref[k]}</span>
+                          <svg
+                            width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke={C.rosewoodDark} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                            style={{ transform: isOpen ? "rotate(180deg)" : "none", transition:"transform .2s", flexShrink:0 }}
+                          >
+                            <polyline points="6 9 12 15 18 9"/>
+                          </svg>
+                        </span>
+                      </button>
+
+                      <div style={{
+                        maxHeight: isOpen ? 160 : 0,
+                        overflow:"hidden",
+                        transition:"max-height .2s ease",
+                        background:C.cardBg,
+                      }}>
+                        <div style={{padding:"4px 14px 14px"}}>
+                          <input
+                            type="range" min={1} max={5} value={pref[k]}
+                            onChange={e => setPrefVal(k, +e.target.value)}
+                            style={{
+                              WebkitAppearance:"none",width:"100%",height:5,borderRadius:3,
+                              outline:"none",cursor:"pointer",margin:"6px 0",
+                              background:`linear-gradient(to right,${C.teal} 0%,${C.teal} ${((pref[k]-1)/4)*100}%,${C.border} ${((pref[k]-1)/4)*100}%,${C.border} 100%)`,
+                            }}
+                          />
+                          <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>
+                            Seberapa penting {LABEL_KRITERIA[k].toLowerCase()} menjadi faktor pertimbangan anda dalam memilih penginapan?
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
 
               <div style={{
                 background:C.rosewoodSoft,border:`1px solid ${C.rosewoodBorder}`,
@@ -1080,10 +1124,9 @@ export default function TawangStay() {
               </div>
             </div>
 
-            {/* kolom kanan: peta besar + tombol lokasi + jumlah + cta */}
             <div style={{display:"flex",flexDirection:"column",gap:14}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontSize:9.5,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",color:C.teal}}>
+                <span style={{fontSize:9.5,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",color:C.rosewoodDark}}>
                   Titik Keberangkatan
                 </span>
                 <span style={{
