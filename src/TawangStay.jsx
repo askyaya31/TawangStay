@@ -77,7 +77,7 @@ const DATA = [
   {id:6, nama:"Hotel Bintang Tawangmangu",tipe:"Hotel",rating:3.8,ulasan:1797,harga:284428,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6695,lon:111.1268},
   {id:7, nama:"Red Chilies Hill Hotel",tipe:"Hotel",rating:3.6,ulasan:98,harga:174038,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6688,lon:111.1350},
   {id:8, nama:"De Jempol Tawangmangu",tipe:"Hotel",rating:4.7,ulasan:73,harga:212406,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6679,lon:111.1342},
-  {id:9, nama:"RedDoorz near Balekambang",tipe:"Hotel",rating:4.3,ulasan:229,harga:166072,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.5506,lon:110.8279},
+  // {id:9, nama:"RedDoorz near Balekambang",tipe:"Hotel",rating:4.3,ulasan:229,harga:166072,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.5506,lon:110.8279},
   {id:10,nama:"RedDoorz Hotel Tejomoyo",tipe:"Hotel",rating:4.3,ulasan:270,harga:123337,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6689,lon:111.1348},
   {id:11,nama:"Villa Batumarta",tipe:"Villa",rating:4.3,ulasan:140,harga:1249560,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6688,lon:111.1350},
   {id:12,nama:"Villa SEMESTA Tawangmangu",tipe:"Villa",rating:4.9,ulasan:55,harga:800000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6690,lon:111.1348},
@@ -136,72 +136,73 @@ async function ukurBobotKoneksi() {
 }
 
 // ukurBobotKoneksi();
-
 const GRAPH_DASAR = {
-  Terminal:       [["Simpang_Pasar",1.97],["Jl_Lawu_Utara",0.87]],
-  Simpang_Pasar:  [["Terminal",1.97],["Jalur_Grojogan",0.75],["Jalur_Tembus",0.39]],
-  Jalur_Grojogan: [["Simpang_Pasar",0.75],["Jalur_Tembus",0.58]],
-  Jalur_Tembus:   [["Simpang_Pasar",0.39],["Jalur_Grojogan",0.58]],
-  Jl_Lawu_Utara:  [["Terminal",0.87],["Simpang_Kramat",1.13],["Simpang_Beji",1.1]],
-  Simpang_Kramat:  [["Jl_Lawu_Utara",1.13],["Simpang_Beji",0.21]],
-  Simpang_Beji:   [["Jl_Lawu_Utara",1.1],["Simpang_Kramat",0.21]],
-  Jl_Sekipan:     [["Jalur_Tembus",3.2],["Simpang_Kramat",2.02]],
-  Jl_Pancot:      [["Simpang_Kramat",1.22],["Jl_Lawu_Utara",2.57]],
-  Jl_Nano:        [["Simpang_Pasar",0.3],["Jalur_Grojogan",0.75],["Jl_Blumbang",3.53]],
-  Jl_Blumbang:    [["Terminal",4.02],["Jalur_Tembus",3.81],["Jl_Nano",3.56]],
-  Gondosuli:      [["Jl_Lawu_Utara",4.02],["Terminal",3.32]],
+  Terminal:       [["Simpang_Pasar",1.97,4.3],["Jl_Lawu_Utara",0.87,2.1]],
+  Simpang_Pasar:  [["Terminal",1.97,4.2],["Jalur_Grojogan",0.75,2.1],["Jalur_Tembus",0.39,1.2]],
+  Jalur_Grojogan: [["Simpang_Pasar",0.75,1.9],["Jalur_Tembus",0.58,1.5]],
+  Jalur_Tembus:   [["Simpang_Pasar",0.39,1],["Jalur_Grojogan",0.58,1.7],["Sekipan_Tengah",2.31,5]],
+  Jl_Lawu_Utara:  [["Terminal",0.87,2.1],["Simpang_Kramat",1.13,2.9],["Simpang_Beji",1.1,2.8]],
+  Simpang_Kramat: [["Jl_Lawu_Utara",1.13,2.9],["Simpang_Beji",0.21,0.7],["Kramat_Selatan",2.02,5.1]],
+  Simpang_Beji:   [["Jl_Lawu_Utara",1.1,2.7],["Simpang_Kramat",0.21,0.7]],
+  Jl_Sekipan:     [["Jalur_Tembus",3.2,7.8],["Simpang_Kramat",2.02,5.1],["Sekipan_Tengah",3.47,6.8],["Kramat_Selatan",0,0]],
+  Jl_Pancot:      [["Simpang_Kramat",1.22,2.4],["Jl_Lawu_Utara",2.57,4.6]],
+  Jl_Nano:        [["Simpang_Pasar",0,0],["Jalur_Grojogan",0.75,2.1],["Jl_Blumbang",3.53,8.8]],
+  Jl_Blumbang:    [["Terminal",4.02,8.6],["Jalur_Tembus",3.81,9.6],["Jl_Nano",3.56,8.7]],
+  Gondosuli:      [["Jl_Lawu_Utara",4.02,6.3],["Terminal",3.32,5.3]],
+  Sekipan_Tengah: [["Jl_Sekipan",3.47,6.8],["Jalur_Tembus",2.31,5],["Kramat_Selatan",3.47,6.8]],
+  Kramat_Selatan: [["Jl_Sekipan",0,0],["Simpang_Kramat",2.02,5.1],["Sekipan_Tengah",3.47,6.8]],
 };
+
 const KONEKSI = {
-  1:  [["Simpang_Beji",0.29],  ["Simpang_Kramat",0.37]],
-  2:  [["Jl_Nano",1.3],        ["Simpang_Pasar",1.3]],
-  3:  [["Simpang_Beji",0.57],  ["Jl_Lawu_Utara",1.11]],
-  4:  [["Jl_Nano",1.03],       ["Simpang_Pasar",1.03]],
-  5:  [["Jl_Nano",0.3],        ["Simpang_Pasar",0.3]],
-  6:  [["Simpang_Beji",1.0],   ["Jl_Lawu_Utara",1.75]],
-  7:  [["Jalur_Tembus",2.51],  ["Simpang_Kramat",2.02]],
-  8:  [["Jalur_Tembus",2.31],  ["Simpang_Kramat",2.02]],
-  9:  [["Terminal",40.47]],
-  10: [["Jalur_Tembus",2.31],  ["Simpang_Kramat",2.02]],
-  11: [["Jalur_Tembus",2.51],  ["Jl_Sekipan",3.67]],
-  12: [["Jalur_Tembus",2.31],  ["Jl_Sekipan",3.47]],
-  13: [["Jalur_Tembus",2.31],  ["Jl_Sekipan",3.47]],
-  14: [["Jalur_Tembus",2.31],  ["Jl_Sekipan",3.47]],
-  15: [["Jl_Blumbang",0.38],   ["Terminal",4.4]],
-  16: [["Simpang_Beji",0.19],  ["Simpang_Kramat",0.31]],
-  17: [["Jl_Pancot",0.2],      ["Simpang_Kramat",1.22]],
-  18: [["Jalur_Tembus",2.51],  ["Jl_Sekipan",3.67]],
-  19: [["Jl_Blumbang",1.26],   ["Terminal",3.23]],
-  20: [["Jl_Blumbang",0.2],    ["Terminal",4.02]],
-  21: [["Simpang_Kramat",0.56],["Jl_Lawu_Utara",0.56]],
-  22: [["Jalur_Tembus",1.56],  ["Gondosuli",5.04]],
-  23: [["Jalur_Tembus",2.31],  ["Jl_Sekipan",3.47]],
-  24: [["Terminal",9.06],      ["Gondosuli",10.98]],
-  25: [["Jalur_Tembus",2.51],  ["Jl_Sekipan",3.67]],
-  26: [["Jl_Blumbang",0.43],   ["Terminal",4.45]],
-  27: [["Jalur_Tembus",2.31],  ["Jl_Sekipan",3.47]],
-  28: [["Terminal",1.81],      ["Jl_Lawu_Utara",2.43]],
-  29: [["Terminal",1.3],       ["Jl_Blumbang",3.76]],
-  30: [["Gondosuli",0.62],     ["Jl_Nano",2.9]],
-  31: [["Gondosuli",1.92],     ["Jalur_Tembus",2.6]],
-  32: [["Jl_Sekipan",0.07],    ["Jalur_Tembus",3.26]],
-  33: [["Jl_Sekipan",0.12],    ["Jalur_Tembus",3.07]],
-  34: [["Gondosuli",0.2],      ["Jl_Nano",3.51]],
-  35: [["Jl_Lawu_Utara",1.63],["Jl_Pancot",5.78]],
-  36: [["Terminal",1.26],      ["Jl_Lawu_Utara",1.35]],
-  37: [["Gondosuli",0.67],     ["Jalur_Tembus",3.21]],
-  38: [["Terminal",4.32],      ["Jl_Lawu_Utara",4.32]],
-  39: [["Jl_Sekipan",0.1],     ["Jalur_Tembus",3.2]],
-  40: [["Jl_Lawu_Utara",0.87],["Simpang_Beji",1.98]],
-  41: [["Simpang_Beji",2.03],  ["Simpang_Pasar",2.99]],
-  42: [["Gondosuli",0.67],     ["Jalur_Tembus",3.21]],
-  43: [["Jl_Sekipan",0.04],    ["Jalur_Tembus",3.23]],
-  44: [["Terminal",2.68],      ["Jl_Lawu_Utara",3.3]],
-  45: [["Jl_Lawu_Utara",0.91],["Simpang_Beji",2.01]],
-  46: [["Terminal",1.21],      ["Jl_Blumbang",3.68]],
-  47: [["Jl_Lawu_Utara",1.63],["Jl_Pancot",5.78]],
-  48: [["Simpang_Beji",1.83],  ["Simpang_Pasar",2.78]],
-  49: [["Jl_Sekipan",0.1],     ["Jalur_Tembus",3.18]],
-  50: [["Gondosuli",0.67],     ["Jalur_Tembus",3.21]],
+  1:  [["Simpang_Beji",0.29,0.8],  ["Simpang_Kramat",0.37,1.1]],
+  2:  [["Jl_Nano",1.3,3.3],        ["Simpang_Pasar",1.3,3.3]],
+  3:  [["Simpang_Beji",0.57,1.5],  ["Jl_Lawu_Utara",1.11,2.5]],
+  4:  [["Jl_Nano",1.03,2.8],       ["Simpang_Pasar",1.03,2.8]],
+  5:  [["Jl_Nano",0,0],            ["Simpang_Pasar",0,0]],
+  6:  [["Simpang_Beji",1,2.6],     ["Jl_Lawu_Utara",1.75,4.1]],
+  7:  [["Sekipan_Tengah",0.93,2],  ["Jalur_Tembus",2.51,5]],
+  8:  [["Sekipan_Tengah",0,0],     ["Simpang_Kramat",1.22,2.4]],
+  10: [["Sekipan_Tengah",0,0],     ["Simpang_Kramat",1.22,2.4]],
+  11: [["Sekipan_Tengah",0.93,2],  ["Jl_Sekipan",3.67,6.8]],
+  12: [["Sekipan_Tengah",0,0],     ["Jl_Sekipan",3.47,6.8]],
+  13: [["Sekipan_Tengah",0,0],     ["Jl_Sekipan",3.47,6.8]],
+  14: [["Sekipan_Tengah",0,0],     ["Jl_Sekipan",3.47,6.8]],
+  15: [["Jl_Blumbang",0.38,0.9],   ["Terminal",4.4,9.5]],
+  16: [["Simpang_Beji",0.19,0.5],  ["Simpang_Kramat",0.31,0.9]],
+  17: [["Jl_Pancot",0,0],          ["Simpang_Kramat",1.22,2.4]],
+  18: [["Sekipan_Tengah",0.93,2],  ["Jl_Sekipan",3.67,6.8]],
+  19: [["Jl_Blumbang",1.26,5],     ["Terminal",3.23,9.5]],
+  20: [["Jl_Blumbang",0,0],        ["Terminal",4.02,8.6]],
+  21: [["Simpang_Kramat",0.56,1.5],["Jl_Lawu_Utara",0.56,1.4]],
+  22: [["Jalur_Tembus",1.56,6.8],  ["Gondosuli",5.04,12.6]],
+  23: [["Sekipan_Tengah",0,0],     ["Jl_Sekipan",3.47,6.8]],
+  24: [["Terminal",9.06,18.4],     ["Gondosuli",10.98,20.2]],
+  25: [["Sekipan_Tengah",0.93,2],  ["Jl_Sekipan",3.67,6.8]],
+  26: [["Jl_Blumbang",0.43,1],     ["Terminal",4.45,9.6]],
+  27: [["Sekipan_Tengah",0,0],     ["Jl_Sekipan",3.47,6.8]],
+  28: [["Terminal",1.81,3.5],      ["Jl_Lawu_Utara",2.43,4.9]],
+  29: [["Terminal",1.3,2.8],       ["Jl_Blumbang",3.76,8.5]],
+  30: [["Gondosuli",0.62,1.7],     ["Jl_Nano",2.9,5]],
+  31: [["Gondosuli",1.92,3.3],     ["Jalur_Tembus",2.6,5.3]],
+  32: [["Kramat_Selatan",0.07,0.3],["Jl_Sekipan",0.07,0.3]],
+  33: [["Kramat_Selatan",0.12,0.3],["Jl_Sekipan",0.12,0.3]],
+  34: [["Gondosuli",0,0],          ["Jl_Nano",3.51,5.9]],
+  35: [["Jl_Lawu_Utara",1.63,5.3],["Jl_Pancot",5.78,9.2]],
+  36: [["Terminal",1.26,2.7],      ["Jl_Lawu_Utara",1.35,3.3]],
+  37: [["Gondosuli",0.67,1.9],     ["Jalur_Tembus",3.21,6]],
+  38: [["Terminal",4.32,10.4],     ["Jl_Lawu_Utara",4.32,10.5]],
+  39: [["Kramat_Selatan",0,0],     ["Jl_Sekipan",0,0]],
+  40: [["Jl_Lawu_Utara",0.87,2.3],["Simpang_Beji",1.98,5.1]],
+  41: [["Simpang_Beji",2.03,5.2],  ["Simpang_Pasar",2.99,7.3]],
+  42: [["Gondosuli",0.67,1.9],     ["Jalur_Tembus",3.21,6]],
+  43: [["Kramat_Selatan",0.04,0.2],["Jl_Sekipan",0.04,0.2]],
+  44: [["Terminal",2.68,8.7],      ["Jl_Lawu_Utara",3.3,10.1]],
+  45: [["Jl_Lawu_Utara",0.91,2.4],["Simpang_Beji",2.01,5.2]],
+  46: [["Terminal",1.21,2.6],      ["Jl_Blumbang",3.68,8.3]],
+  47: [["Jl_Lawu_Utara",1.63,5.3],["Jl_Pancot",5.78,9.2]],
+  48: [["Simpang_Beji",1.83,4.6],  ["Simpang_Pasar",2.78,6.6]],
+  49: [["Kramat_Selatan",0.01,0],  ["Jl_Sekipan",0.01,0]],
+  50: [["Gondosuli",0.67,1.9],     ["Jalur_Tembus",3.21,6]],
 };
 
 function buildMatriks(pref) {
@@ -218,7 +219,7 @@ function buildMatriks(pref) {
   return M;
 }
 
-function estimasiWaktuTempuh(jarakKm, kecepatanKmPerJam = 30) {
+function estimasiWaktuTempuh(jarakKm, kecepatanKmPerJam = 20) {
   if (jarakKm === null || jarakKm === 999) return "—";
   const menit = Math.round((jarakKm / kecepatanKmPerJam) * 60);
   if (menit < 60) return `${menit} mnt`;
@@ -287,37 +288,61 @@ async function jarakJalanOSRM(lat1, lon1, lat2, lon2) {
   }
 }
 
+async function jarakWaktuOSRM(lat1, lon1, lat2, lon2) {
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.code !== "Ok") {
+      const km = haversine(lat1, lon1, lat2, lon2) * 1.4;
+      return { km, menit: (km / 18) * 60 }; 
+    }
+    return {
+      km: data.routes[0].distance / 1000,
+      menit: data.routes[0].duration / 60,
+    };
+  } catch {
+    const km = haversine(lat1, lon1, lat2, lon2) * 1.4;
+    return { km, menit: (km / 18) * 60 };
+  }
+}
+
 const ROAD_NODES_COORD = {
   Terminal:        { lat: -7.6622, lon: 111.1258 },
   Simpang_Pasar:   { lat: -7.6695, lon: 111.1290 },
   Jalur_Grojogan:  { lat: -7.6710, lon: 111.1320 },
   Jalur_Tembus:    { lat: -7.6700, lon: 111.1305 },
-  Jl_Lawu_Utara:  { lat: -7.6600, lon: 111.1260 },
+  Jl_Lawu_Utara:   { lat: -7.6600, lon: 111.1260 },
   Simpang_Kramat:  { lat: -7.6645, lon: 111.1265 },
   Simpang_Beji:    { lat: -7.6640, lon: 111.1272 },
-  Jl_Sekipan:      { lat: -7.6546, lon: 111.1286 },
+  Jl_Sekipan:       { lat: -7.6546, lon: 111.1286 },
   Jl_Pancot:       { lat: -7.6675, lon: 111.1330 },
   Jl_Nano:         { lat: -7.6698, lon: 111.1295 },
   Jl_Blumbang:     { lat: -7.6810, lon: 111.1261 },
   Gondosuli:       { lat: -7.6690, lon: 111.1410 },
+  Sekipan_Tengah:  { lat: -7.6688, lon: 111.1345 }, 
+  Kramat_Selatan:  { lat: -7.6546, lon: 111.1286 }, 
 };
-
 const NODE_LABEL = {
   Terminal:       "Terminal Tawangmangu",
   Simpang_Pasar:  "Simpang Pasar",
   Jalur_Grojogan: "Jalur Grojogan Sewu",
   Jalur_Tembus:   "Jalur Tembus Kalisoro",
   Jl_Lawu_Utara:  "Jl. Lawu Utara",
-  Simpang_Kramat:  "Simpang Kramat",
+  Simpang_Kramat: "Simpang Kramat",
   Simpang_Beji:   "Simpang Beji",
   Jl_Sekipan:     "Jl. Sekipan, Kramat",
   Jl_Pancot:      "Jl. Pancot, Kalisoro",
   Jl_Nano:        "Jl. Nano, Tawangmangu",
   Jl_Blumbang:    "Kawasan Blumbang",
   Gondosuli:      "Kawasan Gondosuli",
+  Sekipan_Tengah: "Sekipan Tengah",
+  Kramat_Selatan: "Kramat Selatan",
 };
 window.__KONEKSI = KONEKSI;
 window.__DATA = DATA;
+window.__ROAD_NODES_COORD = ROAD_NODES_COORD;
+window.__GRAPH_DASAR = GRAPH_DASAR;
 window.__ROAD_NODES_COORD = ROAD_NODES_COORD;
 
 async function jarakOriginKeNodeOSRM(originLat, originLon, nodeName) {
@@ -355,46 +380,47 @@ function rekonstruksiJalur(prev, tujuan) {
 async function hitungRute(topN, originLat, originLon) {
   const graph = {};
   for (const [node, edges] of Object.entries(GRAPH_DASAR))
-    graph[node] = edges.map(([n, w]) => [n, w]);
+    graph[node] = edges.map(([n, w, t]) => [n, w, t]);
 
   for (const p of topN) {
     const key = `P_${p.id}`;
     const koneksi = KONEKSI[p.id] || [];
-    graph[key] = koneksi.map(([n, w]) => [n, w]);
-    for (const [n, w] of koneksi) {
+    graph[key] = koneksi.map(([n, w, t]) => [n, w, t]);
+    for (const [n, w, t] of koneksi) {
       if (!graph[n]) graph[n] = [];
-      graph[n].push([key, w]);
+      graph[n].push([key, w, t]);
     }
   }
 
   const roadNodes = Object.keys(ROAD_NODES_COORD);
-  const jarakList = await Promise.all(
-    roadNodes.map(rn => jarakOriginKeNodeOSRM(originLat, originLon, rn))
+  const hasilOrigin = await Promise.all(
+    roadNodes.map(rn => {
+      const c = ROAD_NODES_COORD[rn];
+      return jarakWaktuOSRM(originLat, originLon, c.lat, c.lon);
+    })
   );
 
-  // const JARAK_MIN_LEWAT_NODE = 0.3;
-  // graph["Origin"] = roadNodes
-  //   .map((rn, i) => [rn, jarakList[i]])
-  //   .filter(([, d]) => d >= JARAK_MIN_LEWAT_NODE);
-
-  // if (graph["Origin"].length === 0) {
-  //   graph["Origin"] = roadNodes.map((rn, i) => [rn, jarakList[i]]);
-  // }
-  graph["Origin"] = roadNodes.map((rn, i) => [rn, jarakList[i]]);
-
-  for (let i = 0; i < roadNodes.length; i++) {
-    const rn = roadNodes[i];
-    if (!graph[rn]) graph[rn] = [];
-    graph[rn].push(["Origin", jarakList[i]]);
+  let idxTerdekat = 0;
+  for (let i = 1; i < roadNodes.length; i++) {
+    if (hasilOrigin[i].km < hasilOrigin[idxTerdekat].km) idxTerdekat = i;
   }
+  const nodeTerdekat = roadNodes[idxTerdekat];
+  const { km: kmTerdekat, menit: menitTerdekat } = hasilOrigin[idxTerdekat];
 
-  const { dist, prev } = dijkstra(graph, "Origin");
+  graph["Origin"] = [[nodeTerdekat, kmTerdekat, menitTerdekat]];
+  if (!graph[nodeTerdekat]) graph[nodeTerdekat] = [];
+  graph[nodeTerdekat].push(["Origin", kmTerdekat, menitTerdekat]);
+
+  const { dist, prev } = dijkstraTanpaLewatProperti(graph, "Origin", topN);
+
   const peta = {};
   for (const p of topN) {
     const key = `P_${p.id}`;
     const jalurKeys = rekonstruksiJalur(prev, key);
+    const waktuMenit = hitungWaktuSepanjangJalur(jalurKeys, graph);
     peta[p.id] = {
       jarakKm: dist[key] === Infinity ? null : +dist[key].toFixed(2),
+      waktuMenit: dist[key] === Infinity ? null : +waktuMenit.toFixed(1),
       jalur: jalurKeys.map(k =>
         k.startsWith("P_")
           ? topN.find(x => x.id === +k.split("_")[1])?.nama || k
@@ -406,12 +432,50 @@ async function hitungRute(topN, originLat, originLon) {
   return peta;
 }
 
+function dijkstraTanpaLewatProperti(graph, start, topN) {
+  const idProperti = new Set(topN.map(p => `P_${p.id}`));
+  const dist = {}, prev = {};
+  const Q = new Set(Object.keys(graph));
+  for (const n of Q) dist[n] = Infinity;
+  dist[start] = 0;
+  while (Q.size) {
+    let u = null;
+    for (const n of Q) if (u===null || dist[n]<dist[u]) u=n;
+    if (dist[u]===Infinity) break;
+    Q.delete(u);
+    if (idProperti.has(u)) continue;
+    for (const [v, w] of (graph[u]||[])) {
+      if (!Q.has(v)) continue;
+      const alt = dist[u] + w;
+      if (alt < dist[v]) { dist[v]=alt; prev[v]=u; }
+    }
+  }
+  return { dist, prev };
+}
+function hitungWaktuSepanjangJalur(jalurKeys, graph) {
+  let totalMenit = 0;
+  for (let i = 0; i < jalurKeys.length - 1; i++) {
+    const u = jalurKeys[i], v = jalurKeys[i+1];
+    const edge = (graph[u] || []).find(([node]) => node === v);
+    if (edge) totalMenit += edge[2] ?? 0; 
+  }
+  return totalMenit;
+}
+
+function fmtMenit(menit) {
+  if (menit === null || menit === undefined) return "—";
+  const m = Math.round(menit);
+  if (m < 60) return `${m} mnt`;
+  const jam = Math.floor(m / 60), sisa = m % 60;
+  return sisa > 0 ? `${jam} j ${sisa} mnt` : `${jam} jam`;
+}
+
 function hitungNilaiAkhir(topN, ruteMap, wJarak = 0.3) {
   const denganJarak = topN.map(p => ({
     ...p,
     jarakKm: ruteMap[p.id]?.jarakKm ?? 999,
     jalur:   ruteMap[p.id]?.jalur   ?? [],
-    estimasiWaktu: estimasiWaktuTempuh(ruteMap[p.id]?.jarakKm ?? 999),
+    estimasiWaktu: fmtMenit(ruteMap[p.id]?.waktuMenit),
   }));
   const ahpMax = Math.max(...denganJarak.map(d=>d.skorAHP));
   const ahpMin = Math.min(...denganJarak.map(d=>d.skorAHP));
@@ -756,7 +820,15 @@ function SkorBaris({ label, value, sublabel, nilai, warna, track, txt, muted }) 
 }
 
 function RutePill({ jalur, dark=false }) {
+  const [expanded, setExpanded] = useState(false);
   if (!jalur || jalur.length === 0) return null;
+
+  const PANJANG_MAKS = 4;
+  const perluCollapse = jalur.length > PANJANG_MAKS && !expanded;
+  const tampil = perluCollapse
+    ? [jalur[0], jalur[1], "...", jalur[jalur.length-1]]
+    : jalur;
+
   return (
     <div style={{
       display:"flex",alignItems:"center",flexWrap:"wrap",gap:3,
@@ -765,22 +837,56 @@ function RutePill({ jalur, dark=false }) {
       border: dark ? "1px solid rgba(0,0,0,.25)" : `1px solid ${C.rosewoodBorder}`,
     }}>
       <span style={{flexShrink:0}}>
-        <IconRoute size={13} color={dark ? "#fff" : C.teal} />
+        <IconRoute size={13} color={dark ? "#fff" : C.rosewoodDark} />
       </span>
-      {jalur.map((node, i) => (
-        <span key={i} style={{display:"flex",alignItems:"center",gap:3}}>
-          <span style={{
-            fontSize:10,
-            fontWeight:i===0||i===jalur.length-1?700:400,
-            color: dark
-              ? (i===0||i===jalur.length-1 ? "#fff" : "rgba(255,255,255,.60)")
-              : C.rosewoodDark,
-          }}>{node}</span>
-          {i < jalur.length-1 && (
-            <span style={{fontSize:10,color: dark ? "rgba(255,255,255,.50)" : C.rosewoodDark}}>›</span>
-          )}
-        </span>
-      ))}
+      {tampil.map((node, i) => {
+        const isLast = i === tampil.length - 1;
+        return (
+          <span key={i} style={{display:"flex",alignItems:"center",gap:3,flexShrink:0, ...(isLast && {flex:"0 1 auto",minWidth:0})}}>
+            {node === "..." ? (
+              <button
+                onClick={()=>setExpanded(true)}
+                style={{
+                  fontSize:10,fontWeight:700,
+                  color: dark ? "#fff" : C.rosewoodDark,
+                  background: dark ? "rgba(255,255,255,.10)" : C.rosewoodSoft,
+                  border: dark ? "none" : `1px solid ${C.rosewoodBorder}`,
+                  borderRadius:4,padding:"1px 6px",
+                  cursor:"pointer",fontFamily:"'DM Sans',sans-serif",
+                  flexShrink:0,
+                }}
+              >
+                +{jalur.length - 3} lainnya
+              </button>
+            ) : (
+              <span style={{
+                fontSize:10,
+                fontWeight:i===0||isLast?700:400,
+                color: dark
+                  ? (i===0||isLast ? "#fff" : "rgba(255,255,255,.60)")
+                  : C.rosewoodDark,
+                whiteSpace: isLast ? "normal" : "nowrap",
+              }}>{node}</span>
+            )}
+            {i < tampil.length-1 && tampil[i] !== "..." && (
+              <span style={{fontSize:10,color: dark ? "rgba(255,255,255,.50)" : C.rosewoodDark,flexShrink:0}}>›</span>
+            )}
+          </span>
+        );
+      })}
+      {expanded && jalur.length > PANJANG_MAKS && (
+        <button
+          onClick={()=>setExpanded(false)}
+          style={{
+            fontSize:9,fontWeight:600,
+            color: dark ? "rgba(255,255,255,.55)" : C.muted,
+            background:"none",border:"none",cursor:"pointer",
+            fontFamily:"'DM Sans',sans-serif",marginLeft:4,
+          }}
+        >
+          (tutup)
+        </button>
+      )}
     </div>
   );
 }
@@ -1068,7 +1174,7 @@ const runAll = useCallback(async () => {
             </div>
           )}
 
-          {hasil && <HasilPanel hasil={hasil} wJarak={wJarak} />}
+          {hasil && <HasilPanel hasil={hasil} wJarak={wJarak} originLat={originLat} originLon={originLon} />}
         </div>
       </main>
 
@@ -1113,7 +1219,7 @@ const runAll = useCallback(async () => {
   );
 }
 
-function HasilPanel({ hasil, wJarak }) {
+function HasilPanel({ hasil, wJarak, originLat, originLon }) {
   const { final } = hasil;
   const best = final[0];
   const rest = final.slice(1);
@@ -1129,7 +1235,7 @@ function HasilPanel({ hasil, wJarak }) {
         <div style={{fontSize:9.5,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",color:C.teal,marginBottom:10}}>
           Rekomendasi Utama — Peringkat 1
         </div>
-        <FeaturedCard p={best} wJarak={wJarak} />
+        <FeaturedCard p={best} wJarak={wJarak} originLat={originLat} originLon={originLon} />
       </div>
 
       {rest.length > 0 && (
@@ -1142,7 +1248,7 @@ function HasilPanel({ hasil, wJarak }) {
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(230px,1fr))",gap:14,overflow:"visible"}}>
             {rest.map((p, i) => (
-              <RankCard key={p.id} p={p} rank={i+2} bestScore={bestScore} wJarak={wJarak} />
+              <RankCard key={p.id} p={p} rank={i+2} bestScore={bestScore} wJarak={wJarak} originLat={originLat} originLon={originLon} />
             ))}
           </div>
         </div>
@@ -1151,7 +1257,7 @@ function HasilPanel({ hasil, wJarak }) {
   );
 }
 
-function FeaturedCard({ p, wJarak }) {
+function FeaturedCard({ p, wJarak, originLat, originLon }) {
   const mapsQ = encodeURIComponent(p.nama + " Tawangmangu");
   const facs = [["Wi-Fi",p.wifi],["Parkir",p.parkir],["AC",p.ac],["Kolam Renang",p.kolam],["Sarapan",p.sarapan]];
   return (
@@ -1212,7 +1318,7 @@ function FeaturedCard({ p, wJarak }) {
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <RincianSkor p={p} wJarak={wJarak} dark textColor="#fff" chevronColor="#fff" />
           <button
-            onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&destination=${mapsQ}`,"_blank")}
+            onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLon}&destination=${mapsQ}`,"_blank")}
             style={{
               padding:"8px 18px",background:"transparent",
               border:"1.5px solid #fff",borderRadius:8,
@@ -1230,7 +1336,7 @@ function FeaturedCard({ p, wJarak }) {
   );
 }
 
-function RankCard({ p, rank, bestScore, wJarak }) {
+function RankCard({ p, rank, bestScore, wJarak, originLat, originLon }) {
   const mapsQ = encodeURIComponent(p.nama + " Tawangmangu");
   const facs = [["Wi-Fi",p.wifi],["Parkir",p.parkir],["AC",p.ac],["Kolam",p.kolam],["Sarapan",p.sarapan]];
   return (
@@ -1305,7 +1411,7 @@ function RankCard({ p, rank, bestScore, wJarak }) {
       <RutePill jalur={p.jalur} />
       <RincianSkor p={p} wJarak={wJarak} />
       <button
-        onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&destination=${mapsQ}`,"_blank")}
+        onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLon}&destination=${mapsQ}`,"_blank")}
         style={{
           marginTop:"auto",
           display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4,
