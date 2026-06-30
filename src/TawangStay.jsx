@@ -30,12 +30,12 @@ const C = {
   cardBg:         "#FDFAF2",
   border:         "#EBE3D0",
   borderDark:     "#D9CEBC",
-featBg: "#8C6460",
-featBorder:  "#E2C781",
-featText:    "#F8F4E6",
-featMuted:   "rgba(248,244,230,.65)",
-  featDim:        "rgba(94,63,60,.40)",   
-  featSurface:    "rgba(255,255,255,.55)", 
+  featBg: "#8C6460",
+  featBorder:  "#E2C781",
+  featText:    "#F8F4E6",
+  featMuted:   "rgba(248,244,230,.65)",
+  featDim:        "rgba(94,63,60,.40)",
+  featSurface:    "rgba(255,255,255,.55)",
 };
 
 const TIPE_COLOR = {
@@ -77,7 +77,6 @@ const DATA = [
   {id:6, nama:"Hotel Bintang Tawangmangu",tipe:"Hotel",rating:3.8,ulasan:1797,harga:284428,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6695,lon:111.1268},
   {id:7, nama:"Red Chilies Hill Hotel",tipe:"Hotel",rating:3.6,ulasan:98,harga:174038,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6688,lon:111.1350},
   {id:8, nama:"De Jempol Tawangmangu",tipe:"Hotel",rating:4.7,ulasan:73,harga:212406,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6679,lon:111.1342},
-  // {id:9, nama:"RedDoorz near Balekambang",tipe:"Hotel",rating:4.3,ulasan:229,harga:166072,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.5506,lon:110.8279},
   {id:10,nama:"RedDoorz Hotel Tejomoyo",tipe:"Hotel",rating:4.3,ulasan:270,harga:123337,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6689,lon:111.1348},
   {id:11,nama:"Villa Batumarta",tipe:"Villa",rating:4.3,ulasan:140,harga:1249560,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6688,lon:111.1350},
   {id:12,nama:"Villa SEMESTA Tawangmangu",tipe:"Villa",rating:4.9,ulasan:55,harga:800000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6690,lon:111.1348},
@@ -121,21 +120,6 @@ const DATA = [
   {id:50,nama:"Glamping Lawu Camp",tipe:"Glamping",rating:4.3,ulasan:104,harga:425000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:1,lat:-7.6672,lon:111.1392},
 ].map(d => ({ ...d, alamat: ALAMAT[d.id] || "" }));
 
-async function ukurBobotKoneksi() {
-  for (const [id, edges] of Object.entries(KONEKSI)) {
-    const p = DATA.find(d => d.id === +id);
-    for (const [node] of edges) {
-      const c = ROAD_NODES_COORD[node];
-      const url = `https://router.project-osrm.org/route/v1/driving/${p.lon},${p.lat};${c.lon},${c.lat}?overview=false`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const km = data.code === "Ok" ? +(data.routes[0].distance/1000).toFixed(2) : null;
-      console.log(`${id} (${p.nama}) → ${node}: ${km} km`);
-    }
-  }
-}
-
-// ukurBobotKoneksi();
 const GRAPH_DASAR = {
   Terminal:       [["Simpang_Pasar",1.97,4.3],["Jl_Lawu_Utara",0.87,2.1]],
   Simpang_Pasar:  [["Terminal",1.97,4.2],["Jalur_Grojogan",0.75,2.1],["Jalur_Tembus",0.39,1.2]],
@@ -219,15 +203,6 @@ function buildMatriks(pref) {
   return M;
 }
 
-function estimasiWaktuTempuh(jarakKm, kecepatanKmPerJam = 20) {
-  if (jarakKm === null || jarakKm === 999) return "—";
-  const menit = Math.round((jarakKm / kecepatanKmPerJam) * 60);
-  if (menit < 60) return `${menit} mnt`;
-  const jam = Math.floor(menit / 60);
-  const sisaMenit = menit % 60;
-  return sisaMenit > 0 ? `${jam} j ${sisaMenit} mnt` : `${jam} jam`;
-}
-
 function hitungBobot(M) {
   const n = M.length;
   const colSum = Array(n).fill(0);
@@ -284,7 +259,7 @@ async function jarakJalanOSRM(lat1, lon1, lat2, lon2) {
     if (data.code !== "Ok") return haversine(lat1, lon1, lat2, lon2) * 1.4;
     return data.routes[0].distance / 1000;
   } catch {
-    return haversine(lat1, lon1, lat2, lon2) * 1.4; 
+    return haversine(lat1, lon1, lat2, lon2) * 1.4;
   }
 }
 
@@ -295,7 +270,7 @@ async function jarakWaktuOSRM(lat1, lon1, lat2, lon2) {
     const data = await res.json();
     if (data.code !== "Ok") {
       const km = haversine(lat1, lon1, lat2, lon2) * 1.4;
-      return { km, menit: (km / 18) * 60 }; 
+      return { km, menit: (km / 18) * 60 };
     }
     return {
       km: data.routes[0].distance / 1000,
@@ -320,8 +295,8 @@ const ROAD_NODES_COORD = {
   Jl_Nano:         { lat: -7.6698, lon: 111.1295 },
   Jl_Blumbang:     { lat: -7.6810, lon: 111.1261 },
   Gondosuli:       { lat: -7.6690, lon: 111.1410 },
-  Sekipan_Tengah:  { lat: -7.6688, lon: 111.1345 }, 
-  Kramat_Selatan:  { lat: -7.6546, lon: 111.1286 }, 
+  Sekipan_Tengah:  { lat: -7.6688, lon: 111.1345 },
+  Kramat_Selatan:  { lat: -7.6546, lon: 111.1286 },
 };
 const NODE_LABEL = {
   Terminal:       "Terminal Tawangmangu",
@@ -339,19 +314,9 @@ const NODE_LABEL = {
   Sekipan_Tengah: "Sekipan Tengah",
   Kramat_Selatan: "Kramat Selatan",
 };
-window.__KONEKSI = KONEKSI;
-window.__DATA = DATA;
-window.__ROAD_NODES_COORD = ROAD_NODES_COORD;
-window.__GRAPH_DASAR = GRAPH_DASAR;
-window.__ROAD_NODES_COORD = ROAD_NODES_COORD;
 
-async function jarakOriginKeNodeOSRM(originLat, originLon, nodeName) {
-  const c = ROAD_NODES_COORD[nodeName];
-  if (!c) return 999;
-  return await jarakJalanOSRM(originLat, originLon, c.lat, c.lon);
-}
-
-function dijkstra(graph, start) {
+function dijkstraTanpaLewatProperti(graph, start, topN) {
+  const idProperti = new Set(topN.map(p => `P_${p.id}`));
   const dist = {}, prev = {};
   const Q = new Set(Object.keys(graph));
   for (const n of Q) dist[n] = Infinity;
@@ -361,6 +326,7 @@ function dijkstra(graph, start) {
     for (const n of Q) if (u===null || dist[n]<dist[u]) u=n;
     if (dist[u]===Infinity) break;
     Q.delete(u);
+    if (idProperti.has(u)) continue;
     for (const [v, w] of (graph[u]||[])) {
       if (!Q.has(v)) continue;
       const alt = dist[u] + w;
@@ -375,6 +341,16 @@ function rekonstruksiJalur(prev, tujuan) {
   let node = tujuan;
   while (node) { jalur.unshift(node); node = prev[node]; }
   return jalur;
+}
+
+function hitungWaktuSepanjangJalur(jalurKeys, graph) {
+  let totalMenit = 0;
+  for (let i = 0; i < jalurKeys.length - 1; i++) {
+    const u = jalurKeys[i], v = jalurKeys[i+1];
+    const edge = (graph[u] || []).find(([node]) => node === v);
+    if (edge) totalMenit += edge[2] ?? 0;
+  }
+  return totalMenit;
 }
 
 async function hitungRute(topN, originLat, originLon) {
@@ -432,36 +408,6 @@ async function hitungRute(topN, originLat, originLon) {
   return peta;
 }
 
-function dijkstraTanpaLewatProperti(graph, start, topN) {
-  const idProperti = new Set(topN.map(p => `P_${p.id}`));
-  const dist = {}, prev = {};
-  const Q = new Set(Object.keys(graph));
-  for (const n of Q) dist[n] = Infinity;
-  dist[start] = 0;
-  while (Q.size) {
-    let u = null;
-    for (const n of Q) if (u===null || dist[n]<dist[u]) u=n;
-    if (dist[u]===Infinity) break;
-    Q.delete(u);
-    if (idProperti.has(u)) continue;
-    for (const [v, w] of (graph[u]||[])) {
-      if (!Q.has(v)) continue;
-      const alt = dist[u] + w;
-      if (alt < dist[v]) { dist[v]=alt; prev[v]=u; }
-    }
-  }
-  return { dist, prev };
-}
-function hitungWaktuSepanjangJalur(jalurKeys, graph) {
-  let totalMenit = 0;
-  for (let i = 0; i < jalurKeys.length - 1; i++) {
-    const u = jalurKeys[i], v = jalurKeys[i+1];
-    const edge = (graph[u] || []).find(([node]) => node === v);
-    if (edge) totalMenit += edge[2] ?? 0; 
-  }
-  return totalMenit;
-}
-
 function fmtMenit(menit) {
   if (menit === null || menit === undefined) return "—";
   const m = Math.round(menit);
@@ -489,9 +435,9 @@ function hitungNilaiAkhir(topN, ruteMap, wJarak = 0.3) {
   }).sort((a,b) => b.nilaiAkhir - a.nilaiAkhir);
 }
 
-const fmtRp = n => "Rp\u202f" + n.toLocaleString("id-ID") + "/malam";
 const fmtKm = km => km === 999 || km === null ? "—" : km < 1 ? (km*1000).toFixed(0)+" m" : km.toFixed(1)+" km";
 
+/* ---------- Icons ---------- */
 function IconPin({ size=11, color="currentColor" }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
@@ -500,7 +446,6 @@ function IconPin({ size=11, color="currentColor" }) {
     </svg>
   );
 }
-
 function IconRoute({ size=11, color="currentColor" }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
@@ -509,7 +454,69 @@ function IconRoute({ size=11, color="currentColor" }) {
     </svg>
   );
 }
+function IconWifi({ size=12, color="currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill={color}/>
+    </svg>
+  );
+}
+function IconParkir({ size=12, color="currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>
+    </svg>
+  );
+}
+function IconAC({ size=12, color="currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 9h20"/><rect x="2" y="5" width="20" height="8" rx="2"/>
+      <path d="M7 13v4M12 13v4M17 13v4"/>
+    </svg>
+  );
+}
+function IconKolam({ size=12, color="currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12h20M2 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 17c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+      <path d="M14 5a2 2 0 1 0-4 0v7"/>
+    </svg>
+  );
+}
+function IconSarapan({ size=12, color="currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+      <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+    </svg>
+  );
+}
+const KRITERIA_ICON = {
+  harga: ({ size=12, color="currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+      <line x1="7" y1="7" x2="7.01" y2="7"/>
+    </svg>
+  ),
+  rating: ({ size=12, color="currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+  ),
+  wifi: IconWifi,
+  parkir: IconParkir,
+  ac: IconAC,
+  kolam: IconKolam,
+  sarapan: IconSarapan,
+};
+const FAC_ICON = {
+  "Wi-Fi": IconWifi, "Parkir": IconParkir, "AC": IconAC,
+  "Kolam Renang": IconKolam, "Kolam": IconKolam, "Sarapan": IconSarapan,
+};
 
+/* ---------- Shared small components ---------- */
 function TipeBadge({ tipe, small=false }) {
   const s = TIPE_COLOR[tipe] || {bg:"#ccc",tx:"#333"};
   return (
@@ -523,65 +530,6 @@ function TipeBadge({ tipe, small=false }) {
   );
 }
 
-function ScoreBar({ value, max }) {
-  const pct = max ? Math.round((value/max)*100) : 0;
-  return (
-    <div>
-      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-        <div style={{flex:1,height:4,background:C.border,borderRadius:2,overflow:"hidden"}}>
-          <div style={{height:4,width:`${pct}%`,background:C.teal,borderRadius:2,transition:"width .3s ease"}} />
-        </div>
-        <span style={{fontSize:11,fontWeight:600,color:C.rosewoodDark,minWidth:36,textAlign:"right"}}>
-          {(value*100).toFixed(1)}%
-        </span>
-      </div>
-    </div>
-  );
-}
-
-const KRITERIA_ICON = {
-  harga: ({ size=12, color="currentColor" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-    <line x1="7" y1="7" x2="7.01" y2="7"/>
-  </svg>
-),
-  rating:  ({ size=12, color="currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-    </svg>
-  ),
-  wifi:    ({ size=12, color="currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill={color}/>
-    </svg>
-  ),
-  parkir:  ({ size=12, color="currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>
-    </svg>
-  ),
-  ac:      ({ size=12, color="currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 9h20"/><rect x="2" y="5" width="20" height="8" rx="2"/>
-      <path d="M7 13v4M12 13v4M17 13v4"/>
-    </svg>
-  ),
-  kolam:   ({ size=12, color="currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 12h20M2 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 17c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
-      <path d="M14 5a2 2 0 1 0-4 0v7"/>
-    </svg>
-  ),
-  sarapan: ({ size=12, color="currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-      <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
-    </svg>
-  ),
-};
-
 function RankBadge({ rank }) {
   return (
     <span style={{
@@ -592,71 +540,18 @@ function RankBadge({ rank }) {
   );
 }
 
-function IconWifi({ size=12, color="currentColor" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill={color}/>
-    </svg>
-  );
-}
-
-function IconParkir({ size=12, color="currentColor" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>
-    </svg>
-  );
-}
-
-function IconAC({ size=12, color="currentColor" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 9h20"/><rect x="2" y="5" width="20" height="8" rx="2"/>
-      <path d="M7 13v4M12 13v4M17 13v4"/>
-    </svg>
-  );
-}
-
-function IconKolam({ size=12, color="currentColor" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 12h20M2 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 17c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
-      <path d="M14 5a2 2 0 1 0-4 0v7"/>
-    </svg>
-  );
-}
-
-function IconSarapan({ size=12, color="currentColor" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-      <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
-    </svg>
-  );
-}
-
-const FAC_ICON = {
-  "Wi-Fi":       IconWifi,
-  "Parkir":      IconParkir,
-  "AC":          IconAC,
-  "Kolam Renang":IconKolam,
-  "Kolam":       IconKolam,
-  "Sarapan":     IconSarapan,
-};
-
 function FacTag({ label, val, dark=false }) {
   const Icon = FAC_ICON[label];
   const iconColor = dark
-    ? (val ? "#fff" : "rgba(255,255,255,.35)")      
+    ? (val ? "#fff" : "rgba(255,255,255,.35)")
     : (val ? C.tealDeep : C.muted);
- if (dark) return (
+  if (dark) return (
     <span style={{
       display:"inline-flex",alignItems:"center",gap:5,
       fontSize:10.5,padding:"3px 9px",borderRadius:4,fontWeight:500,
       background: val ? "rgba(226,199,129,.20)" : "rgba(255,255,255,.06)",
       color: iconColor,
-      border: val ? "1px solid rgba(226,199,129,.40)" : "1px solid rgba(255,255,255,.10)",  
+      border: val ? "1px solid rgba(226,199,129,.40)" : "1px solid rgba(255,255,255,.10)",
       textDecoration: val ? "none" : "line-through",
     }}>
       {Icon && <Icon size={11} color={iconColor} />}{label}
@@ -673,41 +568,6 @@ function FacTag({ label, val, dark=false }) {
     }}>
       {Icon && <Icon size={11} color={iconColor} />}{label}
     </span>
-  );
-}
-
-function SidebarSection({ label, children }) {
-  return (
-    <div>
-      <div style={{fontSize:9.5,fontWeight:700,letterSpacing:".14em",textTransform:"uppercase",color:C.teal,marginBottom:10}}>
-        {label}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function Accordion({ title, children, defaultOpen=false }) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div style={{border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden",marginBottom:8}}>
-      <button
-        onClick={()=>setOpen(o=>!o)}
-        style={{
-          width:"100%",padding:"10px 14px",
-          display:"flex",justifyContent:"space-between",alignItems:"center",
-          background:C.cardBg,border:"none",cursor:"pointer",
-          fontFamily:"'DM Sans',sans-serif",fontSize:12.5,fontWeight:600,
-          color:C.rosewoodDark,textAlign:"left",
-        }}
-      >
-        {title}
-        <span style={{fontSize:10,color:C.muted,transform:open?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
-      </button>
-      {open && (
-        <div style={{padding:"12px 14px",background:C.cream}}>{children}</div>
-      )}
-    </div>
   );
 }
 
@@ -729,13 +589,13 @@ function MetaLine({ ulasan, alamat, dark=false }) {
   );
 }
 
-function RincianSkor({ p, wJarak, dark=false }) {
+function RincianSkor({ p, dark=false }) {
   const [open, setOpen] = useState(false);
-  const accent = dark ? "#fff" : C.teal;          
+  const accent = dark ? "#fff" : C.teal;
   const border = dark ? C.featBorder : C.border;
   const txt    = dark ? C.featText  : C.ink;
   const muted  = dark ? C.featMuted : C.muted;
-  const bg = dark ? "#4a2e2e" : C.cardBg;  
+  const bg = dark ? "#4a2e2e" : C.cardBg;
 
   const ahpLabel = p.ahpNorm >= 0.75 ? "Sesuai preferensi"
     : p.ahpNorm >= 0.5  ? "Cukup sesuai"
@@ -761,31 +621,19 @@ function RincianSkor({ p, wJarak, dark=false }) {
         {open ? "Tutup" : "Lihat Rincian Skor"}
         <span style={{fontSize:8,transform:open?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
       </button>
-     {open && (
+      {open && (
         <div style={{
-            position:"absolute",bottom:"calc(100% + 6px)",
-            left:0,        
-            minWidth:220,  
-            zIndex:10,
-            padding:"11px 12px",borderRadius:8,background:bg,
-            border:`1px solid rgba(226,199,129,.55)`, 
-            boxShadow:"0 4px 20px rgba(0,0,0,.35)",    
-            display:"flex",flexDirection:"column",gap:8,
+          position:"absolute",bottom:"calc(100% + 6px)",
+          left:0,minWidth:220,zIndex:10,
+          padding:"11px 12px",borderRadius:8,background:bg,
+          border:`1px solid rgba(226,199,129,.55)`,
+          boxShadow:"0 4px 20px rgba(0,0,0,.35)",
+          display:"flex",flexDirection:"column",gap:8,
         }}>
-          <SkorBaris
-            label="Preferensi" value={ahpLabel}
-            nilai={p.ahpNorm}
-            warna={dark ? C.goldDeep : C.tealDeep}
-            track={C.border}
-            txt={txt} muted={muted}
-          />
-          <SkorBaris
-            label="Lokasi" value={`${lokasiLabel} · ${fmtKm(p.jarakKm)}`}
-            nilai={1 - p.jarNorm}
-            warna={dark ? C.goldDeep : C.tealDeep}
-            track={C.border}
-            txt={txt} muted={muted}
-          />
+          <SkorBaris label="Preferensi" value={ahpLabel} nilai={p.ahpNorm}
+            warna={dark ? C.goldDeep : C.tealDeep} track={C.border} txt={txt} muted={muted} />
+          <SkorBaris label="Lokasi" value={`${lokasiLabel} · ${fmtKm(p.jarakKm)}`} nilai={1 - p.jarNorm}
+            warna={dark ? C.goldDeep : C.tealDeep} track={C.border} txt={txt} muted={muted} />
           <div style={{
             display:"flex",justifyContent:"space-between",alignItems:"center",
             paddingTop:7,borderTop:`1px solid ${border}`,
@@ -800,7 +648,7 @@ function RincianSkor({ p, wJarak, dark=false }) {
   );
 }
 
-function SkorBaris({ label, value, sublabel, nilai, warna, track, txt, muted }) {
+function SkorBaris({ label, value, nilai, warna, track, txt, muted }) {
   const pct = Math.round(nilai * 100);
   return (
     <div style={{display:"flex",flexDirection:"column",gap:3}}>
@@ -808,7 +656,6 @@ function SkorBaris({ label, value, sublabel, nilai, warna, track, txt, muted }) 
         <div>
           <span style={{fontSize:11,fontWeight:600,color:txt}}>{label}: </span>
           <span style={{fontSize:11,color:txt}}>{value}</span>
-          <div style={{fontSize:10,color:muted,marginTop:1}}>{sublabel}</div>
         </div>
         <span style={{fontSize:11,fontWeight:700,color:txt,whiteSpace:"nowrap",flexShrink:0}}>{pct}%</span>
       </div>
@@ -891,41 +738,22 @@ function RutePill({ jalur, dark=false }) {
   );
 }
 
-async function ukurSemuaBobot() {
-  const hasil = {};
-  for (const [nodeA, edges] of Object.entries(GRAPH_DASAR)) {
-    hasil[nodeA] = [];
-    for (const [nodeB] of edges) {
-      const ca = ROAD_NODES_COORD[nodeA];
-      const cb = ROAD_NODES_COORD[nodeB];
-      const url = `https://router.project-osrm.org/route/v1/driving/${ca.lon},${ca.lat};${cb.lon},${cb.lat}?overview=false`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const km = data.code === "Ok" ? +(data.routes[0].distance / 1000).toFixed(2) : null;
-      hasil[nodeA].push([nodeB, km]);
-      console.log(`${nodeA} → ${nodeB}: ${km} km`);
-    }
-  }
-  console.log(JSON.stringify(hasil, null, 2));
-}
-
-// ukurSemuaBobot();
-
+/* ---------- Main component ---------- */
 export default function TawangStay() {
   const [pref, setPref] = useState(Object.fromEntries(KRITERIA.map(k=>[k,3])));
   const [jumlah, setJumlah]       = useState(10);
   const [wJarak, setWJarak]       = useState(30);
-  const [originLat, setOriginLat] = useState(-7.6622);  
-  const [originLon, setOriginLon] = useState(111.1258); 
-  const [originLabel, setOriginLabel] = useState("Terminal Tawangmangu (lokasi default)");
+  const [originLat, setOriginLat] = useState(-7.6622);
+  const [originLon, setOriginLon] = useState(111.1258);
+  const [originLabel, setOriginLabel] = useState("Terminal Tawangmangu (Klik untuk Ubah)");
   const [isDefaultLocation, setIsDefaultLocation] = useState(true);
   const [locInput, setLocInput]   = useState("");
   const [showModal, setShowModal] = useState(false);
   const [hasil, setHasil]         = useState(null);
   const [crInfo, setCrInfo]       = useState(null);
   const [crError, setCrError]     = useState(false);
-  const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading]     = useState(false);
+  const [view, setView]           = useState("form"); // "form" | "hasil"
 
   const setPrefVal = (k, v) => setPref(p => ({...p, [k]: v}));
 
@@ -953,230 +781,353 @@ export default function TawangStay() {
     setShowModal(false);
   }, [locInput]);
 
-const runAll = useCallback(async () => {
-  const M = buildMatriks(pref);
-  const { bobot, lambdaMax, ci, cr } = hitungBobot(M);
-  setCrInfo({ cr: +cr.toFixed(4), ci: +ci.toFixed(4), lambdaMax: +lambdaMax.toFixed(4) });
-  if (cr >= 0.1) { setCrError(true); setHasil(null); return; }
-  setCrError(false);
+  const runAll = useCallback(async () => {
+    const M = buildMatriks(pref);
+    const { bobot, lambdaMax, ci, cr } = hitungBobot(M);
+    setCrInfo({ cr: +cr.toFixed(4), ci: +ci.toFixed(4), lambdaMax: +lambdaMax.toFixed(4) });
+    if (cr >= 0.1) { setCrError(true); setHasil(null); return; }
+    setCrError(false);
 
-  setLoading(true); 
-  try {
-    const n        = Math.min(15, Math.max(1, jumlah || 10));
-    const normList = normalisasiData(DATA);
-    const ranked   = hitungSkorAHP(normList, bobot).slice(0, n);
-    const rute     = await hitungRute(ranked, originLat, originLon); 
-    const final    = hitungNilaiAkhir(ranked, rute, wJarak / 100);
-    setHasil({ final, bobot, M, n });
-  } finally {
-    setLoading(false);
-  }
-}, [pref, jumlah, originLat, originLon, wJarak]);
+    setLoading(true);
+    try {
+      const n        = Math.min(15, Math.max(1, jumlah || 10));
+      const normList = normalisasiData(DATA);
+      const ranked   = hitungSkorAHP(normList, bobot).slice(0, n);
+      const rute     = await hitungRute(ranked, originLat, originLon);
+      const final    = hitungNilaiAkhir(ranked, rute, wJarak / 100);
+      setHasil({ final, bobot, M, n });
+      setView("hasil");
+    } finally {
+      setLoading(false);
+    }
+  }, [pref, jumlah, originLat, originLon, wJarak]);
+
+  const kembaliKeForm = () => setView("form");
 
   return (
     <div style={{
       background:C.cream,minHeight:"100vh",
       fontFamily:"'DM Sans',sans-serif",color:C.ink,fontSize:14,
       width:"100%",maxWidth:"100%",overflowX:"hidden",boxSizing:"border-box",
+      position:"relative",
     }}>
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        .ts-fade { animation: fadeIn .35s ease both; }
+      `}</style>
+
       <header style={{
-        padding:"28px 40px 22px",
-        borderBottom:`1px solid ${C.border}`,
+        position:"relative",
+        padding:"38px 40px 26px",
         background:`linear-gradient(135deg, ${C.cream} 0%, #F2EDD8 100%)`,
+        borderBottom:`1px solid ${C.border}`,
       }}>
-        <div style={{fontSize:10,fontWeight:600,letterSpacing:".18em",textTransform:"uppercase",color:C.teal,marginBottom:5}}>
-          Sistem Rekomendasi Penginapan · AHP + Dijkstra
-        </div>
-        <h1 style={{fontFamily:"Georgia,serif",fontSize:38,fontWeight:900,lineHeight:1,color:C.rosewoodDark,margin:0}}>
-          Tawang<span style={{color:C.teal}}>Stay</span>
-        </h1>
-        <div style={{fontSize:12,color:C.muted,marginTop:6,fontStyle:"italic"}}>
-          Tawangmangu, Karanganyar · 50 penginapan tersedia
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16,flexWrap:"wrap"}}>
+          <div>
+            <div style={{
+              display:"inline-block",fontSize:10,fontWeight:700,letterSpacing:".2em",textTransform:"uppercase",
+              color:C.teal,background:C.tealSoft,border:`1px solid ${C.tealBorder}`,
+              borderRadius:20,padding:"4px 12px",marginBottom:10,
+            }}>
+              AHP + Dijkstra · Tawangmangu
+            </div>
+            <div style={{
+              fontFamily:"Georgia,serif",fontStyle:"italic",fontWeight:700,
+              fontSize:17,color:C.rosewoodDark,marginBottom:2,
+            }}>
+              We are searching the best for you.
+            </div>
+            <h1 style={{
+              fontFamily:"Georgia,serif",fontSize:44,fontWeight:900,lineHeight:1,
+              color:C.rosewoodDark,margin:0,letterSpacing:".01em",
+            }}>
+              Tawang<span style={{color:C.teal}}>Stay</span>
+            </h1>
+          </div>
+
+          {view === "hasil" && (
+            <button
+              onClick={kembaliKeForm}
+              style={{
+                display:"flex",alignItems:"center",gap:7,
+                padding:"10px 18px",borderRadius:30,
+                background:"#fff",border:`1.5px solid ${C.border}`,
+                color:C.rosewoodDark,fontWeight:700,fontSize:12.5,
+                fontFamily:"'DM Sans',sans-serif",cursor:"pointer",
+                boxShadow:"0 4px 14px rgba(124,93,90,.12)",
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+              </svg>
+              Atur Ulang Preferensi
+            </button>
+          )}
         </div>
       </header>
 
-      <main style={{display:"grid",gridTemplateColumns:"300px minmax(0,1fr)",minHeight:"calc(100vh - 100px)",width:"100%"}}>
-        <aside style={{
-          borderRight:`1px solid ${C.border}`,
-          padding:"20px 16px",
-          display:"flex",flexDirection:"column",gap:14,
-          background:"#FAF6EC",
-          position:"sticky",top:0,alignSelf:"start",
-        }}>
-          <SidebarSection label="Titik Keberangkatan">
-            <div
-              onClick={()=>setShowModal(true)}
-              style={{
-                borderRadius:10,overflow:"hidden",height:160,position:"relative",
-                cursor:"pointer",background:C.borderDark,border:`1px solid ${C.border}`,
-              }}
-            >
-              <iframe
-                title="peta"
-                src={`https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d8000!2d${originLon}!3d${originLat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sid!2sid!4v1700000000!5m2!1sid!2sid`}
-                style={{width:"100%",height:"100%",border:"none",pointerEvents:"none"}}
-                loading="lazy"
-              />
+      {view === "form" && (
+        <main className="ts-fade" style={{padding:"24px 40px 56px",display:"flex",flexDirection:"column",gap:32}}>
+          <div style={{display:"grid",gridTemplateColumns:"400px minmax(0,1fr)",gap:36,alignItems:"start"}}>
+
+            {/* kolom kiri: kriteria */}
+            <div style={{
+              display:"flex",flexDirection:"column",gap:14,
+              maxHeight:"calc(100vh - 180px)",overflowY:"auto",paddingRight:6,
+              background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:18,
+              padding:"22px 20px",boxShadow:"0 8px 24px rgba(124,93,90,.08)",
+            }}>
               <div style={{
-                position:"absolute",inset:0,
-                background:"rgba(43,33,24,.62)",
-                display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-                gap:8,padding:"0 16px",
+                fontSize:9.5,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",
+                color:C.teal,marginBottom:2,
               }}>
-                <div style={{
-                  display:"flex",alignItems:"center",gap:6,
-                  background: isDefaultLocation ? C.gold : C.teal,
-                  borderRadius:20,padding:"6px 14px",
-                }}>
-                  <span style={{fontSize:11.5,fontWeight:600,color: isDefaultLocation ? "#3D2C0E" : "#fff"}}>
-                    {isDefaultLocation ? "Pilih lokasi anda" : "Ubah lokasi"}
-                  </span>
-                </div>
-                <div style={{fontSize:12,fontWeight:600,color:"#fff",textAlign:"center"}}>
-                  {originLabel}
-                </div>
-                {isDefaultLocation && (
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.65)",textAlign:"center"}}>
-                    Lokasi default — klik untuk ubah
+                Atur Preferensi Anda
+              </div>
+              {KRITERIA.map(k => {
+                const Icon = KRITERIA_ICON[k];
+                return (
+                  <div key={k} style={{paddingBottom:14,borderBottom:`1px solid ${C.border}`}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+                      <span style={{display:"flex",alignItems:"center",gap:7,fontSize:13.5,fontWeight:700,color:C.rosewoodDark}}>
+                        {Icon && (
+                          <span style={{
+                            width:24,height:24,borderRadius:7,flexShrink:0,
+                            background:C.tealSoft,display:"flex",alignItems:"center",justifyContent:"center",
+                          }}>
+                            <Icon size={13} color={C.tealDeep} />
+                          </span>
+                        )}
+                        {LABEL_KRITERIA[k]}
+                      </span>
+                      <span style={{
+                        fontSize:11,fontWeight:700,color:"#fff",
+                        background:C.teal,borderRadius:20,padding:"2px 9px",minWidth:18,textAlign:"center",
+                      }}>{pref[k]}</span>
+                    </div>
+                    <input
+                      type="range" min={1} max={5} value={pref[k]}
+                      onChange={e => setPrefVal(k, +e.target.value)}
+                      style={{
+                        WebkitAppearance:"none",width:"100%",height:5,borderRadius:3,
+                        outline:"none",cursor:"pointer",margin:"6px 0",
+                        background:`linear-gradient(to right,${C.teal} 0%,${C.teal} ${((pref[k]-1)/4)*100}%,${C.border} ${((pref[k]-1)/4)*100}%,${C.border} 100%)`,
+                      }}
+                    />
+                    <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>
+                      Seberapa penting {LABEL_KRITERIA[k].toLowerCase()} menjadi faktor pertimbangan anda dalam memilih penginapan?
+                    </div>
                   </div>
-                )}
+                );
+              })}
+
+              <div style={{
+                background:C.rosewoodSoft,border:`1px solid ${C.rosewoodBorder}`,
+                borderRadius:14,padding:"14px 16px",
+              }}>
+                <div style={{display:"flex",alignItems:"center",gap:7,fontSize:13.5,fontWeight:700,color:C.rosewoodDark,marginBottom:10}}>
+                  <span style={{
+                    width:24,height:24,borderRadius:7,flexShrink:0,
+                    background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",
+                  }}>
+                    <IconRoute size={13} color={C.rosewood} />
+                  </span>
+                  Komposisi Penilaian
+                </div>
+
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                  <span style={{
+                    fontSize:11,fontWeight:700,color:C.cream,
+                    background:C.rosewood,borderRadius:20,padding:"2px 9px",minWidth:54,textAlign:"center",
+                  }}>Jarak {wJarak}%</span>
+                  <span style={{
+                    fontSize:11,fontWeight:700,color:C.tealDeep,
+                    background:"#fff",border:`1px solid ${C.tealBorder}`,
+                    borderRadius:20,padding:"2px 9px",minWidth:54,textAlign:"center",
+                  }}>AHP {100 - wJarak}%</span>
+                </div>
+
+                <input
+                  type="range" min={0} max={100} value={wJarak}
+                  onChange={e=>setWJarak(+e.target.value)}
+                  style={{
+                    WebkitAppearance:"none",width:"100%",height:5,borderRadius:3,
+                    outline:"none",cursor:"pointer",margin:"6px 0",
+                    background:`linear-gradient(to right,${C.rosewood} 0%,${C.rosewood} ${wJarak}%,${C.tealDeep} ${wJarak}%,${C.tealDeep} 100%)`,
+                  }}
+                />
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.muted,marginBottom:6}}>
+                  <span>Kedekatan Lokasi</span>
+                  <span>Skor Preferensi (AHP)</span>
+                </div>
+                <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>
+                  Geser ke kanan untuk memprioritaskan jarak terdekat, geser ke kiri untuk memprioritaskan kecocokan preferensi.
+                </div>
               </div>
             </div>
-          </SidebarSection>
 
-          <Accordion title="Bobot Kriteria (1 – 5)" defaultOpen={true}>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px 12px"}}>
-              {KRITERIA.map(k => {
-  const Icon = KRITERIA_ICON[k];
-  return (
-    <div key={k}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-        <span style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:600,color:C.rosewoodDark}}>
-          {Icon && <Icon size={12} color={C.rosewoodDark} />}
-          {LABEL_KRITERIA[k]}
-        </span>
-        <span style={{
-          fontSize:10,fontWeight:700,
-          background:C.teal,color:"#fff",
-          borderRadius:20,padding:"1px 7px",
-        }}>{pref[k]}</span>
-      </div>
-      <input
-        type="range" min={1} max={5} value={pref[k]}
-        onChange={e => setPrefVal(k, +e.target.value)}
-        style={{
-          WebkitAppearance:"none",width:"100%",height:4,borderRadius:2,
-          outline:"none",cursor:"pointer",
-          background:`linear-gradient(to right,${C.teal} 0%,${C.teal} ${((pref[k]-1)/4)*100}%,${C.border} ${((pref[k]-1)/4)*100}%,${C.border} 100%)`,
-        }}
-      />
-    </div>
-  );
-})}
-            </div>
-          </Accordion>
-
-          <Accordion title="Bobot Jarak & Jumlah Hasil">
-            <div style={{marginBottom:10}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-                <span style={{fontSize:11,color:C.muted}}>
-                    AHP <strong style={{color:C.rosewood}}>{100-wJarak}%</strong> — Jarak <strong style={{color:C.rosewood}}>{wJarak}%</strong>
+            {/* kolom kanan: peta besar + tombol lokasi + jumlah + cta */}
+            <div style={{display:"flex",flexDirection:"column",gap:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:9.5,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",color:C.teal}}>
+                  Titik Keberangkatan
                 </span>
                 <span style={{
-                  fontSize:10,fontWeight:700,
-                  background:C.rosewood,color:C.cream,
-                  borderRadius:20,padding:"1px 7px",
-                }}>{wJarak}%</span>
+                  display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:600,
+                  color: !isDefaultLocation ? C.tealDeep : C.muted,
+                }}>
+                  <span style={{
+                    width:7,height:7,borderRadius:"50%",
+                    background: !isDefaultLocation ? C.teal : C.borderDark,
+                  }} />
+                  {!isDefaultLocation ? "Lokasi terpilih" : "Lokasi default"}
+                </span>
               </div>
-              <input
-                className="range-jarak"
-                type="range" min={0} max={100} value={wJarak}
-                onChange={e=>setWJarak(+e.target.value)}
+
+              <div
+                onClick={()=>setShowModal(true)}
                 style={{
-                    WebkitAppearance:"none",width:"100%",height:4,borderRadius:2,
-                    outline:"none",cursor:"pointer",
-                    background:`linear-gradient(to right,${C.rosewood} 0%,${C.rosewood} ${wJarak}%,${C.border} ${wJarak}%,${C.border} 100%)`,
+                  borderRadius:28,overflow:"hidden",height:340,position:"relative",
+                  cursor:"pointer",border:`1px solid ${C.border}`,
+                  boxShadow:"0 14px 36px rgba(124,93,90,.18)",
                 }}
+              >
+                <iframe
+                  title="peta"
+                  src={`https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d8000!2d${originLon}!3d${originLat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sid!2sid!4v1700000000!5m2!1sid!2sid`}
+                  style={{width:"100%",height:"100%",border:"none",pointerEvents:"none"}}
+                  loading="lazy"
                 />
-              <div style={{fontSize:10,color:C.muted,marginTop:5}}>
-                Nilai akhir = {100-wJarak}% skor AHP + {wJarak}% kedekatan lokasi
+                <div style={{
+                  position:"absolute",inset:0,
+                  background:"linear-gradient(180deg, rgba(61,44,30,0) 55%, rgba(61,44,30,.45) 100%)",
+                  pointerEvents:"none",
+                }} />
+                <div style={{
+                  position:"absolute",top:18,right:18,
+                  background:"rgba(255,255,255,.92)",color:C.rosewoodDark,
+                  fontSize:11,fontWeight:700,padding:"6px 12px",borderRadius:20,
+                  display:"flex",alignItems:"center",gap:6,
+                  boxShadow:"0 4px 12px rgba(61,44,30,.18)",
+                }}>
+                  <IconPin size={11} color={C.rosewood} />
+                  Klik peta untuk ubah lokasi
+                </div>
               </div>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:11,color:C.muted,flexShrink:0}}>Jumlah hasil</span>
-              <input
-                type="number" min={1} max={15} value={jumlah}
-                onChange={e => {
-                  const val = parseInt(e.target.value, 10);
-                  if (!isNaN(val)) setJumlah(val);
-                }}
+
+              <button
+                onClick={()=>setShowModal(true)}
                 style={{
-                  width:60,padding:"5px 8px",
-                  border:`1.5px solid ${C.border}`,borderRadius:6,
-                  fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.ink,
-                  background:"#fff",outline:"none",
+                  alignSelf:"center",
+                  background:C.gold,color:"#3D2C0E",
+                  fontFamily:"Georgia,serif",fontWeight:700,fontSize:15,
+                  padding:"13px 32px",borderRadius:30,border:"none",cursor:"pointer",
+                  boxShadow:"0 8px 18px rgba(226,199,129,.45)",
+                  maxWidth:"90%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",
+                  transition:"transform .15s, box-shadow .15s",
                 }}
-              />
-              <span style={{fontSize:10,color:C.muted}}>maks. 15</span>
-            </div>
-          </Accordion>
-<button
-  onClick={runAll}
-  disabled={loading}
-  style={{
-    width:"100%", padding:"11px",
-    background: loading ? C.muted : C.teal, color:"#fff",
-    border:"none", borderRadius:8,
-    fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:13,
-    letterSpacing:".05em",
-    cursor: loading ? "not-allowed" : "pointer",
-    transition:"background .15s",
-  }}
->
-  {loading ? "Menghitung rute..." : "Cari Rekomendasi"}
-</button>
+                onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 10px 22px rgba(226,199,129,.55)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 8px 18px rgba(226,199,129,.45)"; }}
+              >
+                {originLabel}
+              </button>
 
-          {crError && (
-            <div style={{fontSize:11,color:"#c44",lineHeight:1.5}}>
-              Tidak konsisten · CR = {crInfo.cr} (harus &lt; 0.1). Sesuaikan bobot dan coba lagi.
-            </div>
-          )}
-        </aside>
-
-        <div style={{padding:"28px 36px",display:"flex",flexDirection:"column",gap:24,minWidth:0}}>
-          {!hasil && !crError && (
-            <div style={{padding:"80px 24px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
               <div style={{
-                width:64,height:64,borderRadius:"50%",
-                background:C.goldSoft,border:`2px solid ${C.goldBorder}`,
-                display:"flex",alignItems:"center",justifyContent:"center",marginBottom:4,
+                display:"flex",alignItems:"center",justifyContent:"space-between",gap:16,
+                background:"#fff",border:`1.5px solid ${C.border}`,borderRadius:16,
+                padding:"16px 18px",
+                boxShadow:"0 6px 18px rgba(124,93,90,.10)",
               }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={C.gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
+                <div>
+                  <div style={{fontSize:13.5,fontWeight:700,color:C.rosewoodDark,marginBottom:2}}>
+                    Jumlah Penginapan
+                  </div>
+                  <div style={{fontSize:11,color:C.muted}}>
+                    Maksimal 15 hasil rekomendasi
+                  </div>
+                </div>
+                <div style={{
+                  display:"flex",alignItems:"stretch",
+                  border:`1.5px solid ${C.border}`,borderRadius:12,overflow:"hidden",flexShrink:0,
+                }}>
+                  <button
+                    onClick={()=>setJumlah(j => Math.max(1, (j||1) - 1))}
+                    aria-label="Kurangi"
+                    style={{
+                      width:38,border:"none",borderRight:`1.5px solid ${C.border}`,
+                      background:C.cream,fontSize:19,fontWeight:700,color:C.rosewoodDark,
+                      cursor:"pointer",lineHeight:1,
+                    }}
+                  >−</button>
+                  <div style={{
+                    width:50,display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:17,fontWeight:700,color:C.ink,background:"#fff",
+                  }}>
+                    {jumlah}
+                  </div>
+                  <button
+                    onClick={()=>setJumlah(j => Math.min(15, (j||0) + 1))}
+                    aria-label="Tambah"
+                    style={{
+                      width:38,border:"none",borderLeft:`1.5px solid ${C.border}`,
+                      background:C.cream,fontSize:19,fontWeight:700,color:C.rosewoodDark,
+                      cursor:"pointer",lineHeight:1,
+                    }}
+                  >+</button>
+                </div>
               </div>
-              <div style={{fontFamily:"Georgia,serif",fontSize:22,color:C.rosewoodDark,fontWeight:700}}>
-                Temukan penginapan terbaik Anda
-              </div>
-              <div style={{fontSize:13,color:C.muted,maxWidth:340,lineHeight:1.6}}>
-                Atur preferensi di panel kiri, lalu klik <strong>Cari Rekomendasi</strong> untuk mendapatkan hasil rekomendasi berbasis AHP + Dijkstra.
-              </div>
-            </div>
-          )}
 
-          {crError && (
-            <div style={{padding:20,background:"#fff5f5",borderRadius:12,border:"1px solid #f5a0a0",color:"#c00"}}>
-              <div style={{fontWeight:700,marginBottom:4}}>Rasio konsistensi melebihi batas (CR ≥ 0.1)</div>
-              <div style={{fontSize:12,lineHeight:1.6}}>
-                Perbedaan preferensi antar kriteria tidak konsisten secara logis. Sesuaikan nilai slider dan coba lagi.
-              </div>
-            </div>
-          )}
+              <button
+                onClick={runAll}
+                disabled={loading}
+                style={{
+                  width:"100%",padding:"16px",borderRadius:14,border:"none",
+                  background: loading ? C.muted : C.teal,color:"#fff",
+                  fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:15,letterSpacing:".02em",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  display:"flex",alignItems:"center",justifyContent:"center",gap:9,
+                  boxShadow: loading ? "none" : "0 10px 22px rgba(91,178,181,.35)",
+                  transition:"transform .15s, box-shadow .15s",
+                }}
+                onMouseEnter={e=>{ if(!loading){ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 12px 26px rgba(91,178,181,.45)"; } }}
+                onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow= loading ? "none" : "0 10px 22px rgba(91,178,181,.35)"; }}
+              >
+                {loading ? (
+                  <>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" style={{animation:"spin 0.9s linear infinite"}}>
+                      <path d="M21 12a9 9 0 1 1-9-9" />
+                    </svg>
+                    Menghitung rute...
+                  </>
+                ) : (
+                  <>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"/>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Cari Rekomendasi
+                  </>
+                )}
+              </button>
 
-          {hasil && <HasilPanel hasil={hasil} wJarak={wJarak} originLat={originLat} originLon={originLon} />}
-        </div>
-      </main>
+              {crError && (
+                <div style={{
+                  fontSize:12,color:"#c00",lineHeight:1.6,
+                  background:"#fff5f5",border:"1px solid #f5a0a0",borderRadius:10,padding:"12px 16px",
+                }}>
+                  <strong>Rasio konsistensi melebihi batas (CR ≥ 0.1).</strong> CR = {crInfo?.cr} (harus &lt; 0.1) — perbedaan preferensi antar kriteria tidak konsisten secara logis. Sesuaikan nilai slider dan coba lagi.
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+      )}
+
+      {view === "hasil" && hasil && (
+        <main className="ts-fade" style={{padding:"24px 40px 56px"}}>
+          <HasilPanel hasil={hasil} originLat={originLat} originLon={originLon} />
+        </main>
+      )}
 
       {showModal && (
         <div
@@ -1219,7 +1170,7 @@ const runAll = useCallback(async () => {
   );
 }
 
-function HasilPanel({ hasil, wJarak, originLat, originLon }) {
+function HasilPanel({ hasil, originLat, originLon }) {
   const { final } = hasil;
   const best = final[0];
   const rest = final.slice(1);
@@ -1235,7 +1186,7 @@ function HasilPanel({ hasil, wJarak, originLat, originLon }) {
         <div style={{fontSize:9.5,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",color:C.teal,marginBottom:10}}>
           Rekomendasi Utama — Peringkat 1
         </div>
-        <FeaturedCard p={best} wJarak={wJarak} originLat={originLat} originLon={originLon} />
+        <FeaturedCard p={best} originLat={originLat} originLon={originLon} />
       </div>
 
       {rest.length > 0 && (
@@ -1248,7 +1199,7 @@ function HasilPanel({ hasil, wJarak, originLat, originLon }) {
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(230px,1fr))",gap:14,overflow:"visible"}}>
             {rest.map((p, i) => (
-              <RankCard key={p.id} p={p} rank={i+2} bestScore={bestScore} wJarak={wJarak} originLat={originLat} originLon={originLon} />
+              <RankCard key={p.id} p={p} rank={i+2} bestScore={bestScore} originLat={originLat} originLon={originLon} />
             ))}
           </div>
         </div>
@@ -1257,7 +1208,7 @@ function HasilPanel({ hasil, wJarak, originLat, originLon }) {
   );
 }
 
-function FeaturedCard({ p, wJarak, originLat, originLon }) {
+function FeaturedCard({ p, originLat, originLon }) {
   const mapsQ = encodeURIComponent(p.nama + " Tawangmangu");
   const facs = [["Wi-Fi",p.wifi],["Parkir",p.parkir],["AC",p.ac],["Kolam Renang",p.kolam],["Sarapan",p.sarapan]];
   return (
@@ -1281,7 +1232,7 @@ function FeaturedCard({ p, wJarak, originLat, originLon }) {
           <div style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:700,lineHeight:1.2,color:C.featText}}>
             {p.nama}
           </div>
-          <MetaLine ulasan={p.ulasan} alamat={p.alamat} dark iconColor="#fff" textColor="#fff" />
+          <MetaLine ulasan={p.ulasan} alamat={p.alamat} dark />
         </div>
         <div style={{
           display:"inline-block",alignSelf:"flex-start",
@@ -1314,9 +1265,9 @@ function FeaturedCard({ p, wJarak, originLat, originLon }) {
         <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
           {facs.map(([l,v])=><FacTag key={l} label={l} val={v} dark />)}
         </div>
-        <RutePill jalur={p.jalur} dark iconColor="#fff" textColor="#fff" />
+        <RutePill jalur={p.jalur} dark />
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <RincianSkor p={p} wJarak={wJarak} dark textColor="#fff" chevronColor="#fff" />
+          <RincianSkor p={p} dark />
           <button
             onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLon}&destination=${mapsQ}`,"_blank")}
             style={{
@@ -1336,7 +1287,7 @@ function FeaturedCard({ p, wJarak, originLat, originLon }) {
   );
 }
 
-function RankCard({ p, rank, bestScore, wJarak, originLat, originLon }) {
+function RankCard({ p, rank, originLat, originLon }) {
   const mapsQ = encodeURIComponent(p.nama + " Tawangmangu");
   const facs = [["Wi-Fi",p.wifi],["Parkir",p.parkir],["AC",p.ac],["Kolam",p.kolam],["Sarapan",p.sarapan]];
   return (
@@ -1409,7 +1360,7 @@ function RankCard({ p, rank, bestScore, wJarak, originLat, originLon }) {
         {facs.map(([l,v])=><FacTag key={l} label={l} val={v} />)}
       </div>
       <RutePill jalur={p.jalur} />
-      <RincianSkor p={p} wJarak={wJarak} />
+      <RincianSkor p={p} />
       <button
         onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLon}&destination=${mapsQ}`,"_blank")}
         style={{
