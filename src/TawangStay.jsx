@@ -135,7 +135,7 @@ async function ukurBobotKoneksi() {
   }
 }
 
-ukurBobotKoneksi();
+// ukurBobotKoneksi();
 
 const GRAPH_DASAR = {
   Terminal:       [["Simpang_Pasar",1.97],["Jl_Lawu_Utara",0.87]],
@@ -372,14 +372,15 @@ async function hitungRute(topN, originLat, originLon) {
     roadNodes.map(rn => jarakOriginKeNodeOSRM(originLat, originLon, rn))
   );
 
-  const JARAK_MIN_LEWAT_NODE = 0.3;
-  graph["Origin"] = roadNodes
-    .map((rn, i) => [rn, jarakList[i]])
-    .filter(([, d]) => d >= JARAK_MIN_LEWAT_NODE);
+  // const JARAK_MIN_LEWAT_NODE = 0.3;
+  // graph["Origin"] = roadNodes
+  //   .map((rn, i) => [rn, jarakList[i]])
+  //   .filter(([, d]) => d >= JARAK_MIN_LEWAT_NODE);
 
-  if (graph["Origin"].length === 0) {
-    graph["Origin"] = roadNodes.map((rn, i) => [rn, jarakList[i]]);
-  }
+  // if (graph["Origin"].length === 0) {
+  //   graph["Origin"] = roadNodes.map((rn, i) => [rn, jarakList[i]]);
+  // }
+  graph["Origin"] = roadNodes.map((rn, i) => [rn, jarakList[i]]);
 
   for (let i = 0; i < roadNodes.length; i++) {
     const rn = roadNodes[i];
@@ -802,15 +803,16 @@ async function ukurSemuaBobot() {
   console.log(JSON.stringify(hasil, null, 2));
 }
 
-ukurSemuaBobot();
+// ukurSemuaBobot();
 
 export default function TawangStay() {
   const [pref, setPref] = useState(Object.fromEntries(KRITERIA.map(k=>[k,3])));
   const [jumlah, setJumlah]       = useState(10);
   const [wJarak, setWJarak]       = useState(30);
-  const [originLat, setOriginLat] = useState(-7.6637);
-  const [originLon, setOriginLon] = useState(111.1248);
-  const [originLabel, setOriginLabel] = useState("");
+  const [originLat, setOriginLat] = useState(-7.6622);  
+  const [originLon, setOriginLon] = useState(111.1258); 
+  const [originLabel, setOriginLabel] = useState("Terminal Tawangmangu (lokasi default)");
+  const [isDefaultLocation, setIsDefaultLocation] = useState(true);
   const [locInput, setLocInput]   = useState("");
   const [showModal, setShowModal] = useState(false);
   const [hasil, setHasil]         = useState(null);
@@ -828,6 +830,7 @@ export default function TawangStay() {
       setOriginLon(pos.coords.longitude);
       setOriginLabel(`${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`);
       setLocInput(`${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`);
+      setIsDefaultLocation(false);
       setShowModal(false);
     }, () => alert("Tidak dapat mengambil lokasi."));
   }, []);
@@ -840,6 +843,7 @@ export default function TawangStay() {
     } else {
       setOriginLabel(locInput || "Lokasi manual");
     }
+    setIsDefaultLocation(false);
     setShowModal(false);
   }, [locInput]);
 
@@ -909,18 +913,25 @@ const runAll = useCallback(async () => {
               />
               <div style={{
                 position:"absolute",inset:0,
-                background:"rgba(61,44,30,.52)",
+                background:"rgba(43,33,24,.62)",
                 display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                gap:8,padding:"0 16px",
               }}>
                 <div style={{
-                  background:C.teal,borderRadius:6,padding:"6px 14px",
-                  fontSize:12,fontWeight:700,color:"#fff",letterSpacing:".04em",
+                  display:"flex",alignItems:"center",gap:6,
+                  background: isDefaultLocation ? C.gold : C.teal,
+                  borderRadius:20,padding:"6px 14px",
                 }}>
-                  {originLabel ? "Ubah Lokasi" : "Pilih Lokasi Anda"}
+                  <span style={{fontSize:11.5,fontWeight:600,color: isDefaultLocation ? "#3D2C0E" : "#fff"}}>
+                    {isDefaultLocation ? "Pilih lokasi anda" : "Ubah lokasi"}
+                  </span>
                 </div>
-                {originLabel && (
-                  <div style={{fontSize:9.5,color:C.gold,marginTop:6,textAlign:"center",padding:"0 12px",lineHeight:1.5}}>
-                    {originLabel}
+                <div style={{fontSize:12,fontWeight:600,color:"#fff",textAlign:"center"}}>
+                  {originLabel}
+                </div>
+                {isDefaultLocation && (
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.65)",textAlign:"center"}}>
+                    Lokasi default — klik untuk ubah
                   </div>
                 )}
               </div>
