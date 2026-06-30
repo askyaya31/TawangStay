@@ -47,6 +47,27 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 1px 4px rgba(0,0,0,.18);
 }
 
+input.range-jarak::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #5E3F3C;
+  cursor: pointer;
+  border: 2px solid #F8F4E6;
+  box-shadow: 0 0 0 1px #7C5D5A;
+}
+
+input.range-jarak::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #5E3F3C;
+  cursor: pointer;
+  border: 2px solid #F8F4E6;
+  box-shadow: 0 0 0 1px #7C5D5A;
+}
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   opacity: 1;
