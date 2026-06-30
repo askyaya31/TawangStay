@@ -996,10 +996,19 @@ export default function TawangStay() {
                 alignSelf:"start",
               }}>
               <div style={{
-                fontSize:9.5,fontWeight:900,letterSpacing:".16em",textTransform:"uppercase",
-                color:C.rosewoodDark,marginBottom:2,
+                fontSize:11,fontWeight:900,letterSpacing:".08em",textTransform:"uppercase",
+                color:C.rosewoodDark,
+                lineHeight:1,WebkitTextStroke:"0.2px currentColor",
               }}>
                 Atur Preferensi Anda
+              </div>
+
+              <div style={{
+                fontSize:8.5,fontWeight:700,letterSpacing:".04em",textTransform:"uppercase",
+                color:C.rosewood,marginTop:-3,
+                lineHeight:1,
+              }}>
+                Ketuk tiap baris untuk membuka pengaturan
               </div>
 
               <div style={{
