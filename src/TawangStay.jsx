@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 const KRITERIA = ["harga", "rating", "wifi", "parkir", "ac", "kolam", "sarapan"];
 const LABEL_KRITERIA = {
@@ -344,27 +344,28 @@ function RouteMap({ originLat, originLon, jalurKeys, destLat, destLon, destNama 
     if (!window.L || !mapRef.current) return;
     if (mapInstanceRef.current) {
       mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
     }
 
-    const map = window.L.map(mapRef.current, { zoomControl: true }).setView([originLat, originLon], 14);
+    const map = window.L.map(mapRef.current, { zoomControl: true, scrollWheelZoom: false }).setView([originLat, originLon], 14);
     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap',
     }).addTo(map);
 
     const coords = [[originLat, originLon]];
-    jalurKeys.slice(1, -1).forEach(k => {
+    (jalurKeys || []).slice(1, -1).forEach(k => {
       const c = ROAD_NODES_COORD[k];
       if (c) coords.push([c.lat, c.lon]);
     });
     coords.push([destLat, destLon]);
 
-    const polyline = window.L.polyline(coords, { color: C.rosewoodDark, weight: 4, opacity: 0.85 }).addTo(map);
+    const polyline = window.L.polyline(coords, { color: C.rosewoodDark, weight: 4, opacity: 0.85, dashArray: "1 8", lineCap: "round" }).addTo(map);
 
     window.L.circleMarker([originLat, originLon], { radius: 7, color: C.rosewoodDark, fillColor: C.teal, fillOpacity: 1, weight: 2 })
       .addTo(map).bindPopup('Lokasi Anda');
 
-    jalurKeys.slice(1, -1).forEach(k => {
+    (jalurKeys || []).slice(1, -1).forEach(k => {
       const c = ROAD_NODES_COORD[k];
       if (c) {
         window.L.circleMarker([c.lat, c.lon], { radius: 5, color: C.tealDeep, fillColor: C.teal, fillOpacity: 1, weight: 2 })
@@ -375,7 +376,7 @@ function RouteMap({ originLat, originLon, jalurKeys, destLat, destLon, destNama 
     window.L.circleMarker([destLat, destLon], { radius: 8, color: C.rosewoodDark, fillColor: C.gold, fillOpacity: 1, weight: 2 })
       .addTo(map).bindPopup(destNama);
 
-    map.fitBounds(polyline.getBounds(), { padding: [24, 24] });
+    map.fitBounds(polyline.getBounds(), { padding: [28, 28] });
     mapInstanceRef.current = map;
 
     return () => {
@@ -387,7 +388,7 @@ function RouteMap({ originLat, originLon, jalurKeys, destLat, destLon, destNama 
   }, [originLat, originLon, jalurKeys, destLat, destLon]);
 
   return (
-    <div ref={mapRef} style={{ width: "100%", height: 200, borderRadius: 10, overflow: "hidden", border: `1px solid ${C.border}` }} />
+    <div ref={mapRef} style={{ width: "100%", height: 320, borderRadius: 10, overflow: "hidden", border: `1px solid ${C.border}` }} />
   );
 }
 
@@ -452,6 +453,7 @@ async function hitungRute(topN, originLat, originLon) {
     peta[p.id] = {
       jarakKm: dist[key] === Infinity ? null : +dist[key].toFixed(2),
       waktuMenit: dist[key] === Infinity ? null : +waktuMenit.toFixed(1),
+      jalurKeys,
       jalur: jalurKeys.map(k =>
         k.startsWith("P_")
           ? topN.find(x => x.id === +k.split("_")[1])?.nama || k
@@ -476,6 +478,7 @@ function hitungNilaiAkhir(topN, ruteMap, wJarak = 0.3) {
     ...p,
     jarakKm: ruteMap[p.id]?.jarakKm ?? 999,
     jalur:   ruteMap[p.id]?.jalur   ?? [],
+    jalurKeys: ruteMap[p.id]?.jalurKeys ?? [],
     estimasiWaktu: fmtMenit(ruteMap[p.id]?.waktuMenit),
   }));
   const ahpMax = Math.max(...denganJarak.map(d=>d.skorAHP));
@@ -492,7 +495,6 @@ function hitungNilaiAkhir(topN, ruteMap, wJarak = 0.3) {
 
 const fmtKm = km => km === 999 || km === null ? "—" : km < 1 ? (km*1000).toFixed(0)+" m" : km.toFixed(1)+" km";
 
-/* ---------- Icons ---------- */
 function IconPin({ size=11, color="currentColor" }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
@@ -506,6 +508,15 @@ function IconRoute({ size=11, color="currentColor" }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
       <circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
       <circle cx="18" cy="5" r="3"/>
+    </svg>
+  );
+}
+function IconMap({ size=13, color="currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+      <line x1="8" y1="2" x2="8" y2="18"/>
+      <line x1="16" y1="6" x2="16" y2="22"/>
     </svg>
   );
 }
@@ -571,7 +582,6 @@ const FAC_ICON = {
   "Kolam Renang": IconKolam, "Kolam": IconKolam, "Sarapan": IconSarapan,
 };
 
-/* ---------- Shared small components ---------- */
 function TipeBadge({ tipe, small=false }) {
   const s = TIPE_COLOR[tipe] || {bg:"#ccc",tx:"#333"};
   return (
@@ -793,7 +803,57 @@ function RutePill({ jalur, dark=false }) {
   );
 }
 
-/* ---------- Main component ---------- */
+function RouteMapModal({ open, onClose, p, originLat, originLon }) {
+  if (!open || !p) return null;
+  return (
+    <div
+      onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
+      style={{position:"fixed",inset:0,background:"rgba(43,33,24,.65)",zIndex:1100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
+    >
+      <div style={{background:C.cream,borderRadius:16,padding:22,width:"min(94vw,640px)",maxHeight:"90vh",overflowY:"auto",boxShadow:"0 16px 60px rgba(61,44,30,.3)"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10,gap:10}}>
+          <div>
+            <div style={{fontSize:9.5,fontWeight:700,letterSpacing:".13em",textTransform:"uppercase",color:C.teal,marginBottom:3}}>
+              Peta Rute Dijkstra
+            </div>
+            <div style={{fontFamily:"Georgia,serif",fontSize:18,fontWeight:700,color:C.rosewoodDark}}>
+              {p.nama}
+            </div>
+          </div>
+          <button onClick={onClose} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:C.muted,flexShrink:0}}>×</button>
+        </div>
+
+        <div style={{marginBottom:10}}>
+          <RutePill jalur={p.jalur} />
+        </div>
+
+        <RouteMap
+          originLat={originLat}
+          originLon={originLon}
+          jalurKeys={p.jalurKeys}
+          destLat={p.lat}
+          destLon={p.lon}
+          destNama={p.nama}
+        />
+
+        <div style={{display:"flex",gap:14,marginTop:12,flexWrap:"wrap"}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11.5,color:C.muted}}>
+            <span style={{width:10,height:10,borderRadius:"50%",background:C.teal,display:"inline-block"}} />
+            Lokasi Anda & simpul jalan
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11.5,color:C.muted}}>
+            <span style={{width:10,height:10,borderRadius:"50%",background:C.gold,display:"inline-block"}} />
+            {p.nama}
+          </div>
+        </div>
+        <div style={{fontSize:11,color:C.muted,marginTop:8,lineHeight:1.5}}>
+          Garis putus-putus menggambarkan urutan simpul graph hasil algoritma Dijkstra, bukan rute jalan sesungguhnya. Jarak tempuh aktual: {fmtKm(p.jarakKm)} ({p.estimasiWaktu}).
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TawangStay() {
   const [pref, setPref] = useState(Object.fromEntries(KRITERIA.map(k=>[k,3])));
   const [jumlah, setJumlah]       = useState(10);
@@ -808,7 +868,8 @@ export default function TawangStay() {
   const [crInfo, setCrInfo]       = useState(null);
   const [crError, setCrError]     = useState(false);
   const [loading, setLoading]     = useState(false);
-  const [view, setView]           = useState("form"); // "form" | "hasil"
+  const [view, setView]           = useState("form");
+  const [routeModalFor, setRouteModalFor] = useState(null);
 
   const setPrefVal = (k, v) => setPref(p => ({...p, [k]: v}));
 
@@ -925,8 +986,6 @@ export default function TawangStay() {
       {view === "form" && (
         <main className="ts-fade" style={{padding:"24px 40px 56px",display:"flex",flexDirection:"column",gap:32}}>
           <div style={{display:"grid",gridTemplateColumns:"400px minmax(0,1fr)",gap:36,alignItems:"start"}}>
-
-            {/* kolom kiri: kriteria */}
             <div style={{
                 display:"flex",flexDirection:"column",gap:14,
                 background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:18,
@@ -1180,7 +1239,12 @@ export default function TawangStay() {
 
       {view === "hasil" && hasil && (
         <main className="ts-fade" style={{padding:"24px 40px 56px"}}>
-          <HasilPanel hasil={hasil} originLat={originLat} originLon={originLon} />
+          <HasilPanel
+            hasil={hasil}
+            originLat={originLat}
+            originLon={originLon}
+            onLihatPeta={(p)=>setRouteModalFor(p)}
+          />
         </main>
       )}
 
@@ -1221,11 +1285,19 @@ export default function TawangStay() {
           </div>
         </div>
       )}
+
+      <RouteMapModal
+        open={!!routeModalFor}
+        onClose={()=>setRouteModalFor(null)}
+        p={routeModalFor}
+        originLat={originLat}
+        originLon={originLon}
+      />
     </div>
   );
 }
 
-function HasilPanel({ hasil, originLat, originLon }) {
+function HasilPanel({ hasil, originLat, originLon, onLihatPeta }) {
   const { final } = hasil;
   const best = final[0];
   const rest = final.slice(1);
@@ -1241,7 +1313,7 @@ function HasilPanel({ hasil, originLat, originLon }) {
         <div style={{fontSize:9.5,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",color:C.teal,marginBottom:10}}>
           Rekomendasi Utama — Peringkat 1
         </div>
-        <FeaturedCard p={best} originLat={originLat} originLon={originLon} />
+        <FeaturedCard p={best} originLat={originLat} originLon={originLon} onLihatPeta={onLihatPeta} />
       </div>
 
       {rest.length > 0 && (
@@ -1254,7 +1326,7 @@ function HasilPanel({ hasil, originLat, originLon }) {
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(230px,1fr))",gap:14,overflow:"visible"}}>
             {rest.map((p, i) => (
-              <RankCard key={p.id} p={p} rank={i+2} bestScore={bestScore} originLat={originLat} originLon={originLon} />
+              <RankCard key={p.id} p={p} rank={i+2} bestScore={bestScore} originLat={originLat} originLon={originLon} onLihatPeta={onLihatPeta} />
             ))}
           </div>
         </div>
@@ -1263,7 +1335,7 @@ function HasilPanel({ hasil, originLat, originLon }) {
   );
 }
 
-function FeaturedCard({ p, originLat, originLon }) {
+function FeaturedCard({ p, originLat, originLon, onLihatPeta }) {
   const mapsQ = encodeURIComponent(p.nama + " Tawangmangu");
   const facs = [["Wi-Fi",p.wifi],["Parkir",p.parkir],["AC",p.ac],["Kolam Renang",p.kolam],["Sarapan",p.sarapan]];
   return (
@@ -1321,28 +1393,45 @@ function FeaturedCard({ p, originLat, originLon }) {
           {facs.map(([l,v])=><FacTag key={l} label={l} val={v} dark />)}
         </div>
         <RutePill jalur={p.jalur} dark />
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
           <RincianSkor p={p} dark />
-          <button
-            onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLon}&destination=${mapsQ}`,"_blank")}
-            style={{
-              padding:"8px 18px",background:"transparent",
-              border:"1.5px solid #fff",borderRadius:8,
-              fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12,color:"#fff",
-              cursor:"pointer",letterSpacing:".04em",transition:"all .15s",
-            }}
-            onMouseEnter={e=>{ e.currentTarget.style.background="rgba(255,255,255,0.12)"; }}
-            onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; }}
-          >
-            Cek Rute di Google Maps
-          </button>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <button
+              onClick={()=>onLihatPeta(p)}
+              style={{
+                display:"flex",alignItems:"center",gap:6,
+                padding:"8px 16px",background:"rgba(255,255,255,.10)",
+                border:"1.5px solid rgba(255,255,255,.35)",borderRadius:8,
+                fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12,color:"#fff",
+                cursor:"pointer",letterSpacing:".03em",transition:"all .15s",
+              }}
+              onMouseEnter={e=>{ e.currentTarget.style.background="rgba(255,255,255,0.18)"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="rgba(255,255,255,.10)"; }}
+            >
+              <IconMap size={13} color="#fff" />
+              Peta Rute Dijkstra
+            </button>
+            <button
+              onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLon}&destination=${mapsQ}`,"_blank")}
+              style={{
+                padding:"8px 18px",background:"transparent",
+                border:"1.5px solid #fff",borderRadius:8,
+                fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12,color:"#fff",
+                cursor:"pointer",letterSpacing:".04em",transition:"all .15s",
+              }}
+              onMouseEnter={e=>{ e.currentTarget.style.background="rgba(255,255,255,0.12)"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; }}
+            >
+              Cek Rute di Google Maps
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function RankCard({ p, rank, originLat, originLon }) {
+function RankCard({ p, rank, originLat, originLon, onLihatPeta }) {
   const mapsQ = encodeURIComponent(p.nama + " Tawangmangu");
   const facs = [["Wi-Fi",p.wifi],["Parkir",p.parkir],["AC",p.ac],["Kolam",p.kolam],["Sarapan",p.sarapan]];
   return (
@@ -1416,28 +1505,44 @@ function RankCard({ p, rank, originLat, originLon }) {
       </div>
       <RutePill jalur={p.jalur} />
       <RincianSkor p={p} />
-      <button
-        onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLon}&destination=${mapsQ}`,"_blank")}
-        style={{
-          marginTop:"auto",
-          display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4,
-          padding:"4px 0",
-          border:"none",background:"transparent",
-          color:C.teal,fontFamily:"'DM Sans',sans-serif",
-          fontWeight:600,fontSize:11.5,cursor:"pointer",
-          letterSpacing:".03em",
-          transition:"color .15s",
-        }}
-        onMouseEnter={e=>e.currentTarget.style.color=C.tealDark}
-        onMouseLeave={e=>e.currentTarget.style.color=C.teal}
-      >
-        Cek Rute
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-          <polyline points="15 3 21 3 21 9"/>
-          <line x1="10" y1="14" x2="21" y2="3"/>
-        </svg>
-      </button>
+      <div style={{marginTop:"auto",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+        <button
+          onClick={()=>onLihatPeta(p)}
+          style={{
+            display:"flex",alignItems:"center",gap:4,
+            padding:"4px 0",border:"none",background:"transparent",
+            color:C.rosewoodDark,fontFamily:"'DM Sans',sans-serif",
+            fontWeight:600,fontSize:11.5,cursor:"pointer",letterSpacing:".03em",
+            transition:"color .15s",
+          }}
+          onMouseEnter={e=>e.currentTarget.style.color=C.rosewood}
+          onMouseLeave={e=>e.currentTarget.style.color=C.rosewoodDark}
+        >
+          <IconMap size={12} />
+          Peta Rute
+        </button>
+        <button
+          onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLon}&destination=${mapsQ}`,"_blank")}
+          style={{
+            display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4,
+            padding:"4px 0",
+            border:"none",background:"transparent",
+            color:C.teal,fontFamily:"'DM Sans',sans-serif",
+            fontWeight:600,fontSize:11.5,cursor:"pointer",
+            letterSpacing:".03em",
+            transition:"color .15s",
+          }}
+          onMouseEnter={e=>e.currentTarget.style.color=C.tealDark}
+          onMouseLeave={e=>e.currentTarget.style.color=C.teal}
+        >
+          Google Maps
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
