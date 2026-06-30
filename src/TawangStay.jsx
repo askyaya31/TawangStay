@@ -336,6 +336,61 @@ function dijkstraTanpaLewatProperti(graph, start, topN) {
   return { dist, prev };
 }
 
+function RouteMap({ originLat, originLon, jalurKeys, destLat, destLon, destNama }) {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+
+  useEffect(() => {
+    if (!window.L || !mapRef.current) return;
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+    }
+
+    const map = window.L.map(mapRef.current, { zoomControl: true }).setView([originLat, originLon], 14);
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap',
+    }).addTo(map);
+
+    const coords = [[originLat, originLon]];
+    jalurKeys.slice(1, -1).forEach(k => {
+      const c = ROAD_NODES_COORD[k];
+      if (c) coords.push([c.lat, c.lon]);
+    });
+    coords.push([destLat, destLon]);
+
+    const polyline = window.L.polyline(coords, { color: C.rosewoodDark, weight: 4, opacity: 0.85 }).addTo(map);
+
+    window.L.circleMarker([originLat, originLon], { radius: 7, color: C.rosewoodDark, fillColor: C.teal, fillOpacity: 1, weight: 2 })
+      .addTo(map).bindPopup('Lokasi Anda');
+
+    jalurKeys.slice(1, -1).forEach(k => {
+      const c = ROAD_NODES_COORD[k];
+      if (c) {
+        window.L.circleMarker([c.lat, c.lon], { radius: 5, color: C.tealDeep, fillColor: C.teal, fillOpacity: 1, weight: 2 })
+          .addTo(map).bindPopup(NODE_LABEL[k] || k);
+      }
+    });
+
+    window.L.circleMarker([destLat, destLon], { radius: 8, color: C.rosewoodDark, fillColor: C.gold, fillOpacity: 1, weight: 2 })
+      .addTo(map).bindPopup(destNama);
+
+    map.fitBounds(polyline.getBounds(), { padding: [24, 24] });
+    mapInstanceRef.current = map;
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [originLat, originLon, jalurKeys, destLat, destLon]);
+
+  return (
+    <div ref={mapRef} style={{ width: "100%", height: 200, borderRadius: 10, overflow: "hidden", border: `1px solid ${C.border}` }} />
+  );
+}
+
 function rekonstruksiJalur(prev, tujuan) {
   const jalur = [];
   let node = tujuan;
@@ -873,11 +928,11 @@ export default function TawangStay() {
 
             {/* kolom kiri: kriteria */}
             <div style={{
-              display:"flex",flexDirection:"column",gap:14,
-              maxHeight:"calc(100vh - 180px)",overflowY:"auto",paddingRight:6,
-              background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:18,
-              padding:"22px 20px",boxShadow:"0 8px 24px rgba(124,93,90,.08)",
-            }}>
+                display:"flex",flexDirection:"column",gap:14,
+                background:C.cardBg,border:`1px solid ${C.border}`,borderRadius:18,
+                padding:"22px 20px",boxShadow:"0 8px 24px rgba(124,93,90,.08)",
+                alignSelf:"start",
+              }}>
               <div style={{
                 fontSize:9.5,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",
                 color:C.teal,marginBottom:2,
