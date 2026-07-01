@@ -1,5 +1,625 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
+const GRAPH_DASAR = {
+  "Terminal": [
+    [
+      "Simpang_Pasar",
+      1.37,
+      2.7
+    ],
+    [
+      "Jl_Lawu_Utara",
+      1.52,
+      2.8
+    ],
+    [
+      "Kramat_Tengah",
+      2.79,
+      2.9
+    ],
+    [
+      "Kramat_Utara",
+      3.3,
+      3.3
+    ],
+    [
+      "Bukit_Sekipan",
+      3.44,
+      4.3
+    ]
+  ],
+  "Simpang_Pasar": [
+    [
+      "Jalur_Grojogan",
+      0.75,
+      2.1
+    ],
+    [
+      "Jalur_Tembus",
+      0.39,
+      1.2
+    ]
+  ],
+  "Jalur_Grojogan": [
+    [
+      "Jalur_Tembus",
+      0.58,
+      1.5
+    ]
+  ],
+  "Jalur_Tembus": [
+    [
+      "Sekipan_Tengah",
+      2.31,
+      4.9
+    ]
+  ],
+  "Jl_Lawu_Utara": [
+    [
+      "Simpang_Kramat",
+      1.13,
+      2.9
+    ],
+    [
+      "Simpang_Beji",
+      1.1,
+      2.8
+    ],
+    [
+      "Sekipan_Tengah",
+      2.57,
+      4.6
+    ],
+    [
+      "Kramat_Utara",
+      3.96,
+      5.5
+    ],
+    [
+      "Kramat_Tengah",
+      3.45,
+      5.1
+    ]
+  ],
+  "Simpang_Kramat": [
+    [
+      "Simpang_Beji",
+      0.21,
+      0.7
+    ],
+    [
+      "Kramat_Tengah",
+      2.09,
+      2.9
+    ]
+  ],
+  "Jl_Sekipan": [
+    [
+      "Jalur_Tembus",
+      3.2,
+      7.8
+    ],
+    [
+      "Simpang_Kramat",
+      2.02,
+      5.1
+    ],
+    [
+      "Sekipan_Tengah",
+      3.47,
+      6.8
+    ],
+    [
+      "Jl_Lawu_Utara",
+      0.89,
+      2.2
+    ]
+  ],
+  "Jl_Pancot": [
+    [
+      "Simpang_Kramat",
+      1.22,
+      2.4
+    ],
+    [
+      "Jl_Lawu_Utara",
+      2.57,
+      4.6
+    ]
+  ],
+  "Jl_Nano": [
+    [
+      "Simpang_Pasar",
+      0,
+      0
+    ],
+    [
+      "Jalur_Grojogan",
+      0.75,
+      2.1
+    ],
+    [
+      "Jl_Blumbang",
+      3.53,
+      8.8
+    ]
+  ],
+  "Jl_Blumbang": [
+    [
+      "Terminal",
+      2.59,
+      6.4
+    ],
+    [
+      "Jalur_Tembus",
+      3.81,
+      9.6
+    ]
+  ],
+  "Gondosuli": [
+    [
+      "Jl_Lawu_Utara",
+      4.02,
+      6.3
+    ],
+    [
+      "Terminal",
+      3.36,
+      4.1
+    ]
+  ],
+  "Sekipan_Tengah": [
+    [
+      "Bukit_Sekipan",
+      2.25,
+      3.7
+    ]
+  ],
+  "Kramat_Tengah": [
+    [
+      "Kramat_Utara",
+      0.75,
+      1.2
+    ],
+    [
+      "Bukit_Sekipan",
+      0.6,
+      1.6
+    ]
+  ]
+};
+
+const KONEKSI = {
+  1: [
+    [
+      "Simpang_Beji",
+      0.29,
+      0.8
+    ],
+    [
+      "Simpang_Kramat",
+      0.37,
+      1.1
+    ],
+    [
+      "Terminal",
+      1.1,
+      1.9
+    ]
+  ],
+  2: [
+    [
+      "Jl_Nano",
+      1.3,
+      3.3
+    ],
+    [
+      "Simpang_Pasar",
+      1.3,
+      3.3
+    ],
+    [
+      "Terminal",
+      1.15,
+      1.5
+    ],
+    [
+      "Simpang_Beji",
+      0.01,
+      0
+    ]
+  ],
+  3: [
+    [
+      "Simpang_Beji",
+      0.57,
+      1.5
+    ],
+    [
+      "Jl_Lawu_Utara",
+      1.11,
+      2.5
+    ],
+    [
+      "Terminal",
+      0.8,
+      1.4
+    ]
+  ],
+  4: [
+    [
+      "Jl_Nano",
+      1.03,
+      2.8
+    ],
+    [
+      "Simpang_Pasar",
+      1.03,
+      2.8
+    ],
+    [
+      "Terminal",
+      1.23,
+      1.6
+    ]
+  ],
+  5: [
+    [
+      "Jl_Nano",
+      1.67,
+      3.5
+    ],
+    [
+      "Simpang_Pasar",
+      1.67,
+      3.5
+    ]
+  ],
+  6: [
+    [
+      "Simpang_Beji",
+      1,
+      2.6
+    ],
+    [
+      "Jl_Lawu_Utara",
+      1.75,
+      4.1
+    ],
+    [
+      "Terminal",
+      1.06,
+      2
+    ],
+    [
+      "Simpang_Pasar",
+      0.31,
+      0.7
+    ]
+  ],
+  7: [
+    [
+      "Bukit_Sekipan",
+      0.1,
+      0.3
+    ],
+    [
+      "Sekipan_Tengah",
+      2.26,
+      3.8
+    ]
+  ],
+  8: [
+    [
+      "Kramat_Utara",
+      0.86,
+      1.5
+    ],
+    [
+      "Jl_Lawu_Utara",
+      3.93,
+      5.2
+    ]
+  ],
+  9: [
+    [
+      "Kramat_Tengah",
+      0.3,
+      0.6
+    ],
+    [
+      "Simpang_Kramat",
+      1.8,
+      2.3
+    ]
+  ],
+  10: [
+    [
+      "Kramat_Tengah",
+      0.22,
+      0.7
+    ],
+    [
+      "Jl_Sekipan",
+      4.62,
+      7.7
+    ]
+  ],
+  11: [
+    [
+      "Kramat_Tengah",
+      0.11,
+      0.3
+    ],
+    [
+      "Jl_Sekipan",
+      4.5,
+      7.4
+    ]
+  ],
+  12: [
+    [
+      "Kramat_Tengah",
+      0.28,
+      0.6
+    ],
+    [
+      "Jl_Sekipan",
+      4.06,
+      6.7
+    ]
+  ],
+  13: [
+    [
+      "Kramat_Tengah",
+      0.32,
+      0.8
+    ],
+    [
+      "Jl_Sekipan",
+      4.41,
+      7.2
+    ]
+  ],
+  14: [
+    [
+      "Jl_Blumbang",
+      0.38,
+      0.9
+    ],
+    [
+      "Terminal",
+      2.97,
+      7.3
+    ]
+  ],
+  15: [
+    [
+      "Simpang_Beji",
+      0.19,
+      0.5
+    ],
+    [
+      "Simpang_Kramat",
+      0.31,
+      0.9
+    ],
+    [
+      "Terminal",
+      1.2,
+      1.9
+    ]
+  ],
+  16: [
+    [
+      "Jl_Pancot",
+      2.62,
+      4.1
+    ],
+    [
+      "Simpang_Kramat",
+      3.11,
+      4.5
+    ]
+  ],
+  17: [
+    [
+      "Kramat_Tengah",
+      0.25,
+      0.6
+    ],
+    [
+      "Jl_Sekipan",
+      4.34,
+      7
+    ]
+  ],
+  18: [
+    [
+      "Jl_Blumbang",
+      1.26,
+      5
+    ],
+    [
+      "Terminal",
+      2.42,
+      7.7
+    ]
+  ],
+  19: [
+    [
+      "Kramat_Utara",
+      0.46,
+      1
+    ],
+    [
+      "Gondosuli",
+      1.39,
+      2.7
+    ]
+  ],
+  20: [
+    [
+      "Simpang_Kramat",
+      0.56,
+      1.5
+    ],
+    [
+      "Jl_Lawu_Utara",
+      0.56,
+      1.4
+    ],
+    [
+      "Jl_Nano",
+      1.49,
+      3.4
+    ],
+    [
+      "Simpang_Pasar",
+      1.49,
+      3.4
+    ],
+    [
+      "Terminal",
+      0.96,
+      1.4
+    ]
+  ],
+  21: [
+    [
+      "Jalur_Tembus",
+      1.56,
+      6.8
+    ],
+    [
+      "Gondosuli",
+      5.04,
+      12.6
+    ]
+  ],
+  22: [
+    [
+      "Kramat_Tengah",
+      0.29,
+      0.8
+    ],
+    [
+      "Jl_Sekipan",
+      4.68,
+      7.9
+    ]
+  ],
+  23: [
+    [
+      "Terminal",
+      7.62,
+      16.1
+    ],
+    [
+      "Gondosuli",
+      10.98,
+      20.2
+    ],
+    [
+      "Jl_Blumbang",
+      5.04,
+      9.8
+    ]
+  ],
+  24: [
+    [
+      "Sekipan_Tengah",
+      0.84,
+      2
+    ],
+    [
+      "Jl_Sekipan",
+      3.26,
+      6.7
+    ]
+  ],
+  25: [
+    [
+      "Jl_Blumbang",
+      0.43,
+      1
+    ],
+    [
+      "Terminal",
+      3.01,
+      7.4
+    ]
+  ],
+  26: [
+    [
+      "Bukit_Sekipan",
+      0.05,
+      0.1
+    ],
+    [
+      "Kramat_Tengah",
+      0.55,
+      1.4
+    ]
+  ],
+  /* 
+  27: [
+    [
+      "Gondosuli",
+      0.62,
+      1.7
+    ],
+    [
+      "Jl_Nano",
+      2.9,
+      5
+    ],
+    [
+      "Terminal",
+      2.76,
+      3.2
+    ]
+  ],
+  */
+  28: [
+    [
+      "Jl_Lawu_Utara",
+      0.87,
+      2.3
+    ],
+    [
+      "Simpang_Beji",
+      1.98,
+      5.1
+    ],
+    [
+      "Jl_Sekipan",
+      0.26,
+      0.7
+    ]
+  ],
+  29: [
+    [
+      "Jl_Lawu_Utara",
+      0.91,
+      2.4
+    ],
+    [
+      "Simpang_Beji",
+      2.01,
+      5.2
+    ],
+    [
+      "Jl_Sekipan",
+      0.3,
+      0.7
+    ]
+  ]
+};
+
+
+
+
 const KRITERIA = ["harga", "rating", "wifi", "parkir", "ac", "kolam", "sarapan"];
 const LABEL_KRITERIA = {
   harga: "Harga/Malam", rating: "Rating", wifi: "Wi-Fi",
@@ -47,147 +667,73 @@ const TIPE_COLOR = {
   "Guest House":  { bg: "#B5987A", tx: "#fff"    },
 };
 
+const VERIFIED = {
+  16: true,
+};
+
 const ALAMAT = {
-  1:"Jl. Lawu No.11, Beji",2:"Jl. Grojogan Sewu, Beji",3:"Jl. Lawu–KarangKulon, Beji",
-  4:"Jl. Nano, Tawangmangu",5:"Jl. Banjarsari, Nano",6:"Jl. Lawu–Bener, Nano",
-  7:"Jl. Sekipan, Kramat, Kalisoro",8:"Kramat, Kalisoro",9:"Jl. Majapahit III, Nusukan, Surakarta",
-  10:"Kramat, Kalisoro",11:"Jl. Sekipan, Kramat, Kalisoro",12:"Jl. Sekipan, Kramat, Kalisoro",
-  13:"Jl. Lawu, Kramat, Kalisoro",14:"Kramat, Kalisoro",15:"Ombang-Ombang, Blumbang",
-  16:"Jl. Nurul Alfiah, Beji",17:"Jl. Pancot Lor, Jetis, Kalisoro",18:"Kramat, Kalisoro",
-  19:"Jl. Watusambang, Plumbon",20:"Ombang-Ombang, Blumbang",21:"Jl. Grojogan Sewu, Nano",
-  22:"Area Hutan, Tawangmangu",23:"Kramat, Kalisoro",24:"Nglurah, Pleseran",
-  25:"Kalisoro, Tawangmangu",26:"Hutan Lindung, Blumbang",27:"Kramat, Kalisoro",
-  28:"Jl. Raya Solo-Tawangmangu No.1, Nano",29:"Blumbang, Tawangmangu",
-  30:"Jl. Raya Solo-Tawangmangu KM.30, Gondosuli",31:"Jl. Watusambang, Plumbon",
-  32:"Kramat, Kalisoro",33:"Jl. Lawu, Kalisoro",34:"Jl. Raya Solo-Tawangmangu KM.32, Gondosuli",
-  35:"Pancot, Kalisoro",36:"Blumbang, Tawangmangu",37:"Gondosuli Kidul, Gondosuli",
-  38:"Berjo, Ngargoyoso",39:"Jl. Sekipan, Kramat, Kalisoro",40:"Jl. Lawu No.22, Karanglo",
-  41:"Jl. Podang, Beji",42:"Area Hutan, Gondosuli",43:"Kramat, Kalisoro",
-  44:"Terminal Tawangmangu",45:"Jl. Lawu Kav.15-16, Tawangmangu",46:"Blumbang, Tawangmangu",
-  47:"Jl. Pancot, Kalisoro",48:"Karanglo, Tawangmangu",49:"Jl. Sekipan, Kramat, Kalisoro",
-  50:"Gondosuli, Tawangmangu",
+  1:"Jl. Lawu No.11, Beji, Tawangmangu, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  2:"Jalan grojogan sèwu beji, RT.04/RW.08, Beji, Tawangmangu, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  3:"Jl. Lawu Jl. KarangKulon, Beji, Tawangmangu, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  4:"Jl, Nano, Tawangmangu, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  5:"Jl. Banjarsari, Nano, Tawangmangu, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  6:"Jl. Lawu Jl. Bener, Nano, Tawangmangu, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57128",
+  7:"Jl. Sekipan, Kramat, Kalisoro, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  8:"84QW+5R5, Kramat, Kalisoro, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  9:"Kramat, Kalisoro, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  10:"Jl. Sekipan, Kramat, Kalisoro, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  11:"Jl. Sekipan, Kramat, Kalisoro, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  12:"Jl. Lawu, Kramat, Kalisoro, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  13:"RT.3/RW.3, Kramat, Kalisoro, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  14:"Ombang- Ombang, Blumbang, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  15:"Jl. Nurul Alfiah Street, Beji, Tawangmangu, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  16:"Jl. Pancot Lor, Jetis, Kalisoro, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  17:"Kramat, Kalisoro, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  18:"Jl. Watusambang, Watusambang, Plumbon, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  19:"Jalan, Ombang- Ombang, Blumbang, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  20:"Jl. Grojogan sewu Pintu II Ngunut Lor, RT.4/RW.6, Nano, Tawangmangu, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792, Indonesia",
+  21:"Area Hutan, Tawangmangu, Karanganyar Regency, Central Java, Indonesia",
+  22:"RT.2/RW.2, Kramat, Kalisoro, Tawangmangu, Surakarta, Central Java 57792, Indonesia",
+  23:"Nglurah, Pleseran, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792, Indonesia",
+  24:"Kalisoro, Tawangmangu, Karanganyar Regency, Central Java, Indonesia",
+  25:"Area Hutan Lindung, Blumbang, Tawangmangu, Karanganyar Regency, Central Java, Indonesia",
+  26:"Kramat, Kalisoro, Tawangmangu, Karanganyar Regency, Central Java, Indonesia",
+  28:"Tawangmangu Beji RT04 RW08 Gang Jambu, Beji, Tawangmangu, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
+  29:"Jl. Lawu Kav. 150-151 Tawangmangu, Kalisoro, Kec. Tawangmangu, Kabupaten Karanganyar, Jawa Tengah 57792",
 };
 
 const DATA = [
   {id:1, nama:"Hotel Agro Tawangmangu",tipe:"Hotel",rating:4.5,ulasan:38,harga:230294,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6637,lon:111.1248},
   {id:2, nama:"Samara Homestay",tipe:"Homestay",rating:4.6,ulasan:143,harga:205159,wifi:1,parkir:1,ac:0,kolam:0,sarapan:1,lat:-7.6641,lon:111.1272},
   {id:3, nama:"Hotel Grand Bintang",tipe:"Hotel",rating:3.9,ulasan:1544,harga:308035,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6665,lon:111.1248},
-  {id:4, nama:"ARTICA Hotel & Homestay",tipe:"Hotel",rating:4.6,ulasan:72,harga:270270,wifi:1,parkir:1,ac:0,kolam:1,sarapan:1,lat:-7.6680,lon:111.1285},
-  {id:5, nama:"RedDoorz near Grojogan Sewu",tipe:"Hotel",rating:4.2,ulasan:382,harga:146027,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6698,lon:111.1295},
+  {id:4, nama:"ARTICA Hotel & Homestay",tipe:"Hotel",rating:4.6,ulasan:72,harga:270270,wifi:1,parkir:1,ac:0,kolam:1,sarapan:1,lat:-7.668,lon:111.1285},
+  {id:5, nama:"RedDoorz near Grojogan Sewu",tipe:"Hotel",rating:4.2,ulasan:382,harga:146027,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.664885,lon:111.1313518},
   {id:6, nama:"Hotel Bintang Tawangmangu",tipe:"Hotel",rating:3.8,ulasan:1797,harga:284428,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6695,lon:111.1268},
-  {id:7, nama:"Red Chilies Hill Hotel",tipe:"Hotel",rating:3.6,ulasan:98,harga:174038,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6688,lon:111.1350},
-  {id:8, nama:"De Jempol Tawangmangu",tipe:"Hotel",rating:4.7,ulasan:73,harga:212406,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6679,lon:111.1342},
-  {id:10,nama:"RedDoorz Hotel Tejomoyo",tipe:"Hotel",rating:4.3,ulasan:270,harga:123337,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6689,lon:111.1348},
-  {id:11,nama:"Villa Batumarta",tipe:"Villa",rating:4.3,ulasan:140,harga:1249560,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6688,lon:111.1350},
-  {id:12,nama:"Villa SEMESTA Tawangmangu",tipe:"Villa",rating:4.9,ulasan:55,harga:800000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6690,lon:111.1348},
-  {id:13,nama:"Villa Pandawa Tawangmangu",tipe:"Villa",rating:4.3,ulasan:98,harga:685186,wifi:1,parkir:1,ac:0,kolam:0,sarapan:1,lat:-7.6682,lon:111.1340},
-  {id:14,nama:"Pondok Jempol 1",tipe:"Guest House",rating:4.5,ulasan:186,harga:134356,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6681,lon:111.1342},
-  {id:15,nama:"Villa Roemah Iboek",tipe:"Villa",rating:4.9,ulasan:52,harga:1500000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:1,lat:-7.6834,lon:111.1248},
-  {id:16,nama:"Villa Sulthon",tipe:"Villa",rating:4.4,ulasan:33,harga:1571612,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6635,lon:111.1255},
-  {id:17,nama:"Villa Kusuma Tawangmangu",tipe:"Villa",rating:5.0,ulasan:7,harga:1200000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6675,lon:111.1330},
-  {id:18,nama:"Allura Azana Resort",tipe:"Resort",rating:4.7,ulasan:1641,harga:352000,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6688,lon:111.1355},
-  {id:19,nama:"Atsiri Glamping",tipe:"Glamping",rating:4.7,ulasan:207,harga:1307741,wifi:1,parkir:1,ac:1,kolam:0,sarapan:1,lat:-7.6782,lon:111.1264},
-  {id:20,nama:"Tawangmangu Wonder Park",tipe:"Hotel",rating:4.5,ulasan:3834,harga:450000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:1,lat:-7.6810,lon:111.1261},
-  {id:21,nama:"Nava Hotel Tawangmangu",tipe:"Hotel",rating:4.8,ulasan:10080,harga:480000,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6631,lon:111.1231},
-  {id:22,nama:"Diiza Glamping Tawangmangu",tipe:"Glamping",rating:4.8,ulasan:6,harga:400000,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6757,lon:111.1389},
-  {id:23,nama:"Glamping Bahagia Sekipan",tipe:"Glamping",rating:4.9,ulasan:40,harga:400000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6691,lon:111.1346},
-  {id:24,nama:"SCENIC GLAMPING",tipe:"Villa",rating:5.0,ulasan:15,harga:700000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.7025,lon:111.1260},
-  {id:25,nama:"Naomi Villa Tawangmangu",tipe:"Villa",rating:4.6,ulasan:12,harga:1300000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6685,lon:111.1348},
-  {id:26,nama:"HANA Villa Syariah",tipe:"Villa",rating:4.9,ulasan:32,harga:1700000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6830,lon:111.1260},
-  {id:27,nama:"Villa Nuansa Tawangmangu",tipe:"Villa",rating:4.9,ulasan:3791,harga:1680000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6691,lon:111.1348},
-  {id:28,nama:"Super OYO Hotel Sido Mukti",tipe:"Hotel",rating:3.8,ulasan:420,harga:110000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6605,lon:111.1345},
-  {id:29,nama:"Cemara Asri Guest House",tipe:"Guest House",rating:4.2,ulasan:85,harga:180000,wifi:0,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6625,lon:111.1182},
-  {id:30,nama:"Sakura Hills Tawangmangu",tipe:"Glamping",rating:4.5,ulasan:1200,harga:650000,wifi:1,parkir:1,ac:1,kolam:0,sarapan:1,lat:-7.6680,lon:111.1400},
-  {id:31,nama:"Rumah Atsiri Glamping Premium",tipe:"Glamping",rating:4.8,ulasan:210,harga:2500000,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6655,lon:111.1365},
-  {id:32,nama:"Homestay Sekipan Murah",tipe:"Homestay",rating:4.0,ulasan:12,harga:950000,wifi:0,parkir:0,ac:0,kolam:0,sarapan:0,lat:-7.6541,lon:111.1281},
-  {id:33,nama:"Homestay Backpacker Tawangmangu",tipe:"Homestay",rating:3.9,ulasan:14,harga:85000,wifi:0,parkir:0,ac:0,kolam:0,sarapan:0,lat:-7.6550,lon:111.1290},
-  {id:34,nama:"Griya Sarangan Hotel",tipe:"Hotel",rating:4.1,ulasan:280,harga:195000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6690,lon:111.1410},
-  {id:35,nama:"Villa Parikesit Kembar",tipe:"Villa",rating:4.5,ulasan:45,harga:2200000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6518,lon:111.1258},
-  {id:36,nama:"RedDoorz near Air Terjun",tipe:"Hotel",rating:4.0,ulasan:88,harga:135000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6628,lon:111.1184},
-  {id:37,nama:"Mountain Cabin Tawangmangu",tipe:"Glamping",rating:4.7,ulasan:112,harga:950000,wifi:1,parkir:1,ac:1,kolam:0,sarapan:1,lat:-7.6675,lon:111.1395},
-  {id:38,nama:"Homestay Asri Berjo",tipe:"Homestay",rating:4.4,ulasan:31,harga:150000,wifi:0,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6450,lon:111.1200},
-  {id:39,nama:"Villa Executive Sekipan",tipe:"Villa",rating:4.8,ulasan:19,harga:350000,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6546,lon:111.1286},
-  {id:40,nama:"Hotel Wahyu Utomo",tipe:"Hotel",rating:3.7,ulasan:156,harga:160000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6558,lon:111.1298},
-  {id:41,nama:"Pondok Asri Tawangmangu",tipe:"Guest House",rating:4.2,ulasan:410,harga:225000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:1,lat:-7.6565,lon:111.1305},
-  {id:42,nama:"Bobocabin Mantiq Tawangmangu",tipe:"Glamping",rating:4.8,ulasan:340,harga:890000,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6670,lon:111.1390},
-  {id:43,nama:"Villa Pinus Tawangmangu",tipe:"Villa",rating:4.3,ulasan:62,harga:1100000,wifi:1,parkir:0,ac:0,kolam:0,sarapan:0,lat:-7.6544,lon:111.1284},
-  {id:44,nama:"Losmen Murah Meriah",tipe:"Guest House",rating:3.5,ulasan:24,harga:90000,wifi:0,parkir:0,ac:0,kolam:0,sarapan:0,lat:-7.6600,lon:111.1338},
-  {id:45,nama:"Hotel Komajaya Komaratih",tipe:"Hotel",rating:4.2,ulasan:180,harga:380000,wifi:1,parkir:1,ac:1,kolam:0,sarapan:1,lat:-7.6564,lon:111.1304},
-  {id:46,nama:"Pringgondani Glamping",tipe:"Glamping",rating:4.6,ulasan:53,harga:550000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:1,lat:-7.6632,lon:111.1188},
-  {id:47,nama:"Villa Bukit Indah",tipe:"Villa",rating:4.4,ulasan:28,harga:1800000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:1,lat:-7.6516,lon:111.1256},
-  {id:48,nama:"Omah Lowo Homestay",tipe:"Homestay",rating:4.0,ulasan:9,harga:175000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6556,lon:111.1296},
-  {id:49,nama:"Resort Sekipan Mewah",tipe:"Resort",rating:4.9,ulasan:89,harga:1450000,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6547,lon:111.1287},
-  {id:50,nama:"Glamping Lawu Camp",tipe:"Glamping",rating:4.3,ulasan:104,harga:425000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:1,lat:-7.6672,lon:111.1392},
-].map(d => ({ ...d, alamat: ALAMAT[d.id] || "" }));
+  {id:7, nama:"Red Chilies Hill Hotel",tipe:"Hotel",rating:3.6,ulasan:98,harga:174038,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6690371,lon:111.1438578},
+  {id:8, nama:"De Jempol Tawangmangu",tipe:"Hotel",rating:4.7,ulasan:73,harga:212406,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6619725,lon:111.1469784},
+  {id:9, nama:"RedDoorz Hotel Tejomoyo Near Bukit Sekipan Tawangmangu",tipe:"Hotel",rating:4.3,ulasan:270,harga:123337,wifi:1,parkir:1,ac:1,kolam:0,sarapan:0,lat:-7.6634271,lon:111.1405778},
+  {id:10, nama:"Villa Batumarta",tipe:"Villa",rating:4.3,ulasan:140,harga:1249560,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6658627,lon:111.1430862},
+  {id:11, nama:"Villa SEMESTA Tawangmangu",tipe:"Villa",rating:4.9,ulasan:55,harga:800000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6648418,lon:111.1431418},
+  {id:12, nama:"Villa Pandawa Tawangmangu",tipe:"Villa",rating:4.3,ulasan:98,harga:685186,wifi:1,parkir:1,ac:0,kolam:0,sarapan:1,lat:-7.6634656,lon:111.1407279},
+  {id:13, nama:"Pondok Jempol 1",tipe:"Guest House",rating:4.5,ulasan:186,harga:134356,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6632833,lon:111.1433643},
+  {id:14, nama:"Villa Roemah Iboek",tipe:"Villa",rating:4.9,ulasan:52,harga:1500000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:1,lat:-7.6834,lon:111.1248},
+  {id:15, nama:"Villa Sulthon",tipe:"Villa",rating:4.4,ulasan:33,harga:1571612,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6635,lon:111.1255},
+  {id:16, nama:"Villa Kusuma Tawangmangu",tipe:"Villa",rating:5,ulasan:7,harga:1200000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6588301,lon:111.1424162},
+  {id:17, nama:"Allura Azana Resort",tipe:"Resort",rating:4.7,ulasan:1641,harga:352000,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6636846,lon:111.143252},
+  {id:18, nama:"Atsiri Glamping",tipe:"Glamping",rating:4.7,ulasan:207,harga:1307741,wifi:1,parkir:1,ac:1,kolam:0,sarapan:1,lat:-7.6782,lon:111.1264},
+  {id:19, nama:"Tawangmangu Wonder Park",tipe:"Hotel",rating:4.5,ulasan:3834,harga:450000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:1,lat:-7.6599967,lon:111.1450153},
+  {id:20, nama:"Nava Hotel Tawangmangu",tipe:"Hotel",rating:4.8,ulasan:10080,harga:480000,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6631,lon:111.1231},
+  {id:21, nama:"Diiza Glamping Tawangmangu",tipe:"Glamping",rating:4.8,ulasan:6,harga:400000,wifi:1,parkir:1,ac:1,kolam:1,sarapan:1,lat:-7.6757,lon:111.1389},
+  {id:22, nama:"Glamping Bahagia Sekipan Tawangmangu Mitra RedDoorz",tipe:"Glamping",rating:4.9,ulasan:40,harga:400000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6658991,lon:111.1436957},
+  {id:23, nama:"SCENIC GLAMPING",tipe:"Villa",rating:5,ulasan:15,harga:700000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.7025,lon:111.126},
+  {id:24, nama:"Naomi Villa Tawangmangu",tipe:"Villa",rating:4.6,ulasan:12,harga:1300000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6609423,lon:111.1344069},
+  {id:25, nama:"HANA Villa Syariah",tipe:"Villa",rating:4.9,ulasan:32,harga:1700000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.683,lon:111.126},
+  {id:26, nama:"Villa Nuansa Tawangmangu",tipe:"Villa",rating:4.9,ulasan:3791,harga:1680000,wifi:1,parkir:1,ac:0,kolam:1,sarapan:0,lat:-7.6685409,lon:111.1437225},
+  // id:27 (Sakura Hills Tawangmangu) di-exclude — OSRM publik snap ke jalan yg tidak benar2 tembus
+  {id:28, nama:"Homestay Wahyu Utomo",tipe:"Homestay",rating:4.4,ulasan:82,harga:160000,wifi:1,parkir:1,ac:0,kolam:0,sarapan:0,lat:-7.6558,lon:111.1298},
+  {id:29, nama:"Hotel Komajaya Komaratih",tipe:"Hotel",rating:4.2,ulasan:491,harga:120000,wifi:1,parkir:1,ac:1,kolam:0,sarapan:1,lat:-7.6564,lon:111.1304},
+].map(d => ({ ...d, alamat: ALAMAT[d.id] || "", verified: !!VERIFIED[d.id] }));
 
-const GRAPH_DASAR = {
-  Terminal:       [["Simpang_Pasar",1.97,4.3],["Jl_Lawu_Utara",0.87,2.1]],
-  Simpang_Pasar:  [["Terminal",1.97,4.2],["Jalur_Grojogan",0.75,2.1],["Jalur_Tembus",0.39,1.2]],
-  Jalur_Grojogan: [["Simpang_Pasar",0.75,1.9],["Jalur_Tembus",0.58,1.5]],
-  Jalur_Tembus:   [["Simpang_Pasar",0.39,1],["Jalur_Grojogan",0.58,1.7],["Sekipan_Tengah",2.31,5]],
-  Jl_Lawu_Utara:  [["Terminal",0.87,2.1],["Simpang_Kramat",1.13,2.9],["Simpang_Beji",1.1,2.8]],
-  Simpang_Kramat: [["Jl_Lawu_Utara",1.13,2.9],["Simpang_Beji",0.21,0.7],["Kramat_Selatan",2.02,5.1]],
-  Simpang_Beji:   [["Jl_Lawu_Utara",1.1,2.7],["Simpang_Kramat",0.21,0.7]],
-  Jl_Sekipan:     [["Jalur_Tembus",3.2,7.8],["Simpang_Kramat",2.02,5.1],["Sekipan_Tengah",3.47,6.8],["Kramat_Selatan",0,0]],
-  Jl_Pancot:      [["Simpang_Kramat",1.22,2.4],["Jl_Lawu_Utara",2.57,4.6]],
-  Jl_Nano:        [["Simpang_Pasar",0,0],["Jalur_Grojogan",0.75,2.1],["Jl_Blumbang",3.53,8.8]],
-  Jl_Blumbang:    [["Terminal",4.02,8.6],["Jalur_Tembus",3.81,9.6],["Jl_Nano",3.56,8.7]],
-  Gondosuli:      [["Jl_Lawu_Utara",4.02,6.3],["Terminal",3.32,5.3]],
-  Sekipan_Tengah: [["Jl_Sekipan",3.47,6.8],["Jalur_Tembus",2.31,5],["Kramat_Selatan",3.47,6.8]],
-  Kramat_Selatan: [["Jl_Sekipan",0,0],["Simpang_Kramat",2.02,5.1],["Sekipan_Tengah",3.47,6.8]],
-};
-
-const KONEKSI = {
-  1:  [["Simpang_Beji",0.29,0.8],  ["Simpang_Kramat",0.37,1.1]],
-  2:  [["Jl_Nano",1.3,3.3],        ["Simpang_Pasar",1.3,3.3]],
-  3:  [["Simpang_Beji",0.57,1.5],  ["Jl_Lawu_Utara",1.11,2.5]],
-  4:  [["Jl_Nano",1.03,2.8],       ["Simpang_Pasar",1.03,2.8]],
-  5:  [["Jl_Nano",0,0],            ["Simpang_Pasar",0,0]],
-  6:  [["Simpang_Beji",1,2.6],     ["Jl_Lawu_Utara",1.75,4.1]],
-  7:  [["Sekipan_Tengah",0.93,2],  ["Jalur_Tembus",2.51,5]],
-  8:  [["Sekipan_Tengah",0,0],     ["Simpang_Kramat",1.22,2.4]],
-  10: [["Sekipan_Tengah",0,0],     ["Simpang_Kramat",1.22,2.4]],
-  11: [["Sekipan_Tengah",0.93,2],  ["Jl_Sekipan",3.67,6.8]],
-  12: [["Sekipan_Tengah",0,0],     ["Jl_Sekipan",3.47,6.8]],
-  13: [["Sekipan_Tengah",0,0],     ["Jl_Sekipan",3.47,6.8]],
-  14: [["Sekipan_Tengah",0,0],     ["Jl_Sekipan",3.47,6.8]],
-  15: [["Jl_Blumbang",0.38,0.9],   ["Terminal",4.4,9.5]],
-  16: [["Simpang_Beji",0.19,0.5],  ["Simpang_Kramat",0.31,0.9]],
-  17: [["Jl_Pancot",0,0],          ["Simpang_Kramat",1.22,2.4]],
-  18: [["Sekipan_Tengah",0.93,2],  ["Jl_Sekipan",3.67,6.8]],
-  19: [["Jl_Blumbang",1.26,5],     ["Terminal",3.23,9.5]],
-  20: [["Jl_Blumbang",0,0],        ["Terminal",4.02,8.6]],
-  21: [["Simpang_Kramat",0.56,1.5],["Jl_Lawu_Utara",0.56,1.4]],
-  22: [["Jalur_Tembus",1.56,6.8],  ["Gondosuli",5.04,12.6]],
-  23: [["Sekipan_Tengah",0,0],     ["Jl_Sekipan",3.47,6.8]],
-  24: [["Terminal",9.06,18.4],     ["Gondosuli",10.98,20.2]],
-  25: [["Sekipan_Tengah",0.93,2],  ["Jl_Sekipan",3.67,6.8]],
-  26: [["Jl_Blumbang",0.43,1],     ["Terminal",4.45,9.6]],
-  27: [["Sekipan_Tengah",0,0],     ["Jl_Sekipan",3.47,6.8]],
-  28: [["Terminal",1.81,3.5],      ["Jl_Lawu_Utara",2.43,4.9]],
-  29: [["Terminal",1.3,2.8],       ["Jl_Blumbang",3.76,8.5]],
-  30: [["Gondosuli",0.62,1.7],     ["Jl_Nano",2.9,5]],
-  31: [["Gondosuli",1.92,3.3],     ["Jalur_Tembus",2.6,5.3]],
-  32: [["Kramat_Selatan",0.07,0.3],["Jl_Sekipan",0.07,0.3]],
-  33: [["Kramat_Selatan",0.12,0.3],["Jl_Sekipan",0.12,0.3]],
-  34: [["Gondosuli",0,0],          ["Jl_Nano",3.51,5.9]],
-  35: [["Jl_Lawu_Utara",1.63,5.3],["Jl_Pancot",5.78,9.2]],
-  36: [["Terminal",1.26,2.7],      ["Jl_Lawu_Utara",1.35,3.3]],
-  37: [["Gondosuli",0.67,1.9],     ["Jalur_Tembus",3.21,6]],
-  38: [["Terminal",4.32,10.4],     ["Jl_Lawu_Utara",4.32,10.5]],
-  39: [["Kramat_Selatan",0,0],     ["Jl_Sekipan",0,0]],
-  40: [["Jl_Lawu_Utara",0.87,2.3],["Simpang_Beji",1.98,5.1]],
-  41: [["Simpang_Beji",2.03,5.2],  ["Simpang_Pasar",2.99,7.3]],
-  42: [["Gondosuli",0.67,1.9],     ["Jalur_Tembus",3.21,6]],
-  43: [["Kramat_Selatan",0.04,0.2],["Jl_Sekipan",0.04,0.2]],
-  44: [["Terminal",2.68,8.7],      ["Jl_Lawu_Utara",3.3,10.1]],
-  45: [["Jl_Lawu_Utara",0.91,2.4],["Simpang_Beji",2.01,5.2]],
-  46: [["Terminal",1.21,2.6],      ["Jl_Blumbang",3.68,8.3]],
-  47: [["Jl_Lawu_Utara",1.63,5.3],["Jl_Pancot",5.78,9.2]],
-  48: [["Simpang_Beji",1.83,4.6],  ["Simpang_Pasar",2.78,6.6]],
-  49: [["Kramat_Selatan",0.01,0],  ["Jl_Sekipan",0.01,0]],
-  50: [["Gondosuli",0.67,1.9],     ["Jalur_Tembus",3.21,6]],
-};
 
 function buildMatriks(pref) {
   const n = KRITERIA.length;
@@ -221,20 +767,15 @@ function normalisasiData(list) {
   const hMax = Math.max(...list.map(d=>d.harga));
   const rMin = Math.min(...list.map(d=>d.rating));
   const rMax = Math.max(...list.map(d=>d.rating));
-  const totWifi    = list.reduce((s,d)=>s+d.wifi,0)    || 1;
-  const totParkir  = list.reduce((s,d)=>s+d.parkir,0)  || 1;
-  const totAC      = list.reduce((s,d)=>s+d.ac,0)      || 1;
-  const totKolam   = list.reduce((s,d)=>s+d.kolam,0)   || 1;
-  const totSarapan = list.reduce((s,d)=>s+d.sarapan,0) || 1;
   return list.map(d => ({
     ...d,
     norm_harga:   hMax===hMin ? 1 : (hMax-d.harga)/(hMax-hMin),
     norm_rating:  rMax===rMin ? 1 : (d.rating-rMin)/(rMax-rMin),
-    norm_wifi:    d.wifi    / totWifi,
-    norm_parkir:  d.parkir  / totParkir,
-    norm_ac:      d.ac      / totAC,
-    norm_kolam:   d.kolam   / totKolam,
-    norm_sarapan: d.sarapan / totSarapan,
+    norm_wifi:    d.wifi,
+    norm_parkir:  d.parkir,
+    norm_ac:      d.ac,
+    norm_kolam:   d.kolam,
+    norm_sarapan: d.sarapan,
   }));
 }
 
@@ -283,7 +824,7 @@ async function jarakWaktuOSRM(lat1, lon1, lat2, lon2) {
 }
 
 const ROAD_NODES_COORD = {
-  Terminal:        { lat: -7.6622, lon: 111.1258 },
+  Terminal: { lat: -7.6688, lon: 111.1195 },
   Simpang_Pasar:   { lat: -7.6695, lon: 111.1290 },
   Jalur_Grojogan:  { lat: -7.6710, lon: 111.1320 },
   Jalur_Tembus:    { lat: -7.6700, lon: 111.1305 },
@@ -296,7 +837,9 @@ const ROAD_NODES_COORD = {
   Jl_Blumbang:     { lat: -7.6810, lon: 111.1261 },
   Gondosuli:       { lat: -7.6690, lon: 111.1410 },
   Sekipan_Tengah:  { lat: -7.6688, lon: 111.1345 },
-  Kramat_Selatan:  { lat: -7.6546, lon: 111.1286 },
+  Bukit_Sekipan:   { lat: -7.6679918, lon: 111.1438577 },
+  Kramat_Tengah:   { lat: -7.664352,  lon: 111.142549  },
+  Kramat_Utara:    { lat: -7.660985,  lon: 111.145997  },
 };
 const NODE_LABEL = {
   Terminal:       "Terminal Tawangmangu",
@@ -312,8 +855,23 @@ const NODE_LABEL = {
   Jl_Blumbang:    "Kawasan Blumbang",
   Gondosuli:      "Kawasan Gondosuli",
   Sekipan_Tengah: "Sekipan Tengah",
-  Kramat_Selatan: "Kramat Selatan",
+  Bukit_Sekipan:  "Kawasan Bukit Sekipan, Kramat",
+  Kramat_Tengah:  "Kawasan Kramat Tengah, Kalisoro",
+  Kramat_Utara:   "Kawasan Kramat Utara, Kalisoro",
 };
+
+function buildSymmetricGraph(graphDasar) {
+  const graph = {};
+  for (const [node, edges] of Object.entries(graphDasar)) {
+    if (!graph[node]) graph[node] = [];
+    for (const [to, w, t] of edges) {
+      if (!graph[node].some(([n]) => n === to)) graph[node].push([to, w, t]);
+      if (!graph[to]) graph[to] = [];
+      if (!graph[to].some(([n]) => n === node)) graph[to].push([node, w, t]);
+    }
+  }
+  return graph;
+}
 
 function dijkstraTanpaLewatProperti(graph, start, topN) {
   const idProperti = new Set(topN.map(p => `P_${p.id}`));
@@ -410,9 +968,7 @@ function hitungWaktuSepanjangJalur(jalurKeys, graph) {
 }
 
 async function hitungRute(topN, originLat, originLon) {
-  const graph = {};
-  for (const [node, edges] of Object.entries(GRAPH_DASAR))
-    graph[node] = edges.map(([n, w, t]) => [n, w, t]);
+  const graph = buildSymmetricGraph(GRAPH_DASAR);
 
   for (const p of topN) {
     const key = `P_${p.id}`;
@@ -473,27 +1029,41 @@ function fmtMenit(menit) {
   return sisa > 0 ? `${jam} j ${sisa} mnt` : `${jam} jam`;
 }
 
+
 function hitungNilaiAkhir(topN, ruteMap, wJarak = 0.3) {
   const denganJarak = topN.map(p => ({
     ...p,
-    jarakKm: ruteMap[p.id]?.jarakKm ?? 999,
+    jarakKm: ruteMap[p.id]?.jarakKm ?? null,
     jalur:   ruteMap[p.id]?.jalur   ?? [],
     jalurKeys: ruteMap[p.id]?.jalurKeys ?? [],
     estimasiWaktu: fmtMenit(ruteMap[p.id]?.waktuMenit),
   }));
+
   const ahpMax = Math.max(...denganJarak.map(d=>d.skorAHP));
   const ahpMin = Math.min(...denganJarak.map(d=>d.skorAHP));
-  const jarMax = Math.max(...denganJarak.map(d=>d.jarakKm));
-  const jarMin = Math.min(...denganJarak.map(d=>d.jarakKm));
-  return denganJarak.map(d => {
-    const ahpNorm  = ahpMax===ahpMin ? 1 : (d.skorAHP-ahpMin)/(ahpMax-ahpMin);
-    const jarNorm  = jarMax===jarMin ? 0 : (d.jarakKm-jarMin)/(jarMax-jarMin);
+
+  const terjangkau = denganJarak.filter(d => d.jarakKm !== null);
+  const jarMax = terjangkau.length ? Math.max(...terjangkau.map(d=>d.jarakKm)) : 0;
+  const jarMin = terjangkau.length ? Math.min(...terjangkau.map(d=>d.jarakKm)) : 0;
+
+  const hasil = denganJarak.map(d => {
+    const ahpNorm = ahpMax===ahpMin ? 1 : (d.skorAHP-ahpMin)/(ahpMax-ahpMin);
+
+    if (d.jarakKm === null) {
+      return { ...d, ahpNorm, jarNorm: 1, nilaiAkhir: (1-wJarak)*ahpNorm, takTerjangkau: true };
+    }
+    const jarNorm = jarMax===jarMin ? 0 : (d.jarakKm-jarMin)/(jarMax-jarMin);
     const nilaiAkhir = (1-wJarak)*ahpNorm + wJarak*(1-jarNorm);
-    return { ...d, ahpNorm, jarNorm, nilaiAkhir };
-  }).sort((a,b) => b.nilaiAkhir - a.nilaiAkhir);
+    return { ...d, ahpNorm, jarNorm, nilaiAkhir, takTerjangkau: false };
+  });
+
+  return hasil.sort((a, b) => {
+    if (a.takTerjangkau !== b.takTerjangkau) return a.takTerjangkau ? 1 : -1;
+    return b.nilaiAkhir - a.nilaiAkhir;
+  });
 }
 
-const fmtKm = km => km === 999 || km === null ? "—" : km < 1 ? (km*1000).toFixed(0)+" m" : km.toFixed(1)+" km";
+const fmtKm = km => km === null || km === undefined ? "—" : km < 1 ? (km*1000).toFixed(0)+" m" : km.toFixed(1)+" km";
 
 function IconPin({ size=11, color="currentColor" }) {
   return (
@@ -667,7 +1237,8 @@ function RincianSkor({ p, dark=false }) {
     : p.ahpNorm >= 0.25 ? "Kurang sesuai"
     : "Tidak sesuai";
 
-  const lokasiLabel = p.jarNorm <= 0.25 ? "Dekat"
+  const lokasiLabel = p.takTerjangkau ? "Tidak terjangkau"
+    : p.jarNorm <= 0.25 ? "Dekat"
     : p.jarNorm <= 0.5  ? "Cukup dekat"
     : p.jarNorm <= 0.75 ? "Agak jauh"
     : "Jauh";
@@ -853,13 +1424,13 @@ function RouteMapModal({ open, onClose, p, originLat, originLon }) {
     </div>
   );
 }
-
+ 
 export default function TawangStay() {
   const [pref, setPref] = useState(Object.fromEntries(KRITERIA.map(k=>[k,3])));
   const [jumlah, setJumlah]       = useState(10);
   const [wJarak, setWJarak]       = useState(30);
-  const [originLat, setOriginLat] = useState(-7.6622);
-  const [originLon, setOriginLon] = useState(111.1258);
+  const [originLat, setOriginLat] = useState(-7.6688);
+  const [originLon, setOriginLon] = useState(111.1195);
   const [originLabel, setOriginLabel] = useState("Terminal Tawangmangu (Klik untuk Ubah)");
   const [isDefaultLocation, setIsDefaultLocation] = useState(true);
   const [locInput, setLocInput]   = useState("");
@@ -1474,7 +2045,7 @@ function FeaturedCard({ p, originLat, originLon, onLihatPeta }) {
               onMouseEnter={e=>{ e.currentTarget.style.background="rgba(255,255,255,0.12)"; }}
               onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; }}
             >
-              Cek Rute di Google Maps
+              {p.verified ? "Cek Rute di Google Maps" : "Cek Area di Google Maps"}
             </button>
           </div>
         </div>
@@ -1501,7 +2072,7 @@ function RankCard({ p, rank, originLat, originLon, onLihatPeta }) {
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <RankBadge rank={rank} />
         <div style={{display:"flex",gap:4,alignItems:"center"}}>
-          {p.jarakKm !== 999 && p.jarakKm !== null && (
+          {p.jarakKm !== null && (
             <span style={{
               fontSize:11,fontWeight:600,color:C.tealDeep,
               padding:"3px 8px",borderRadius:4,
@@ -1587,7 +2158,7 @@ function RankCard({ p, rank, originLat, originLon, onLihatPeta }) {
           onMouseEnter={e=>e.currentTarget.style.color=C.tealDark}
           onMouseLeave={e=>e.currentTarget.style.color=C.teal}
         >
-          Google Maps
+          {p.verified ? "Google Maps" : "Google Maps"}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
             <polyline points="15 3 21 3 21 9"/>
